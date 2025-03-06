@@ -1,0 +1,43 @@
+kind: Cluster
+name: k8s-talos-cluster
+labels:
+  template: true
+  cni: none
+  kubespan: enabled
+kubernetes:
+  version: v1.32.2
+talos:
+  version: v1.9.4
+features:
+  enableWorkloadProxy: true
+patches:
+  - name: enable-workload-on-cp
+    file: patches/enable-workload-on-cp.yml
+  - name: kubespan-enabled
+    file: patches/kubespan.yml
+  - name: no-cni # we will install cilium in extraManifests
+    file: patches/cni.yml
+  - name: disable-kubeproxy
+    file: patches/disable-kubeproxy.yml
+  - name: install-cilium
+    file: patches/extraManifests.yml
+  - name: metric-server
+    file: patches/metrics-server.yml
+systemExtensions:
+  - siderolabs/iscsi-tools
+  - siderolabs/util-linux-tools
+---
+kind: Workers
+name: workers
+labels:
+  type: worker
+machineClass:
+  name: k8s-talos-cluster-workers
+  size: unlimited
+---
+kind: ControlPlane
+labels:
+  type: control-plane
+machineClass:
+  name: k8s-talos-cluster-controlplane
+  size: 3
