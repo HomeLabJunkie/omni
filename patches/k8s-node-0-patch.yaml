@@ -1,5 +1,5 @@
-# machine:
-#   kubelet:
+machine:
+  kubelet:
     # extraMounts:
     #   - destination: /var/mnt/storage
     #     type: bind
