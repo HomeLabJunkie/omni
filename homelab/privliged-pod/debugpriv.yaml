@@ -17,6 +17,13 @@ spec:
     - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
       name: kube-api-access-ckmc9
       readOnly: true
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"      
   hostIPC: true
   hostNetwork: true
   hostPID: true
@@ -24,7 +31,7 @@ spec:
   priority: 0
   restartPolicy: Never
   serviceAccountName: default
-  nodeName: k8s-node-0
+  nodeName: k8s-node-0 # Change this to the node you want to run the pod on
   tolerations:
   - operator: Exists
   volumes:
