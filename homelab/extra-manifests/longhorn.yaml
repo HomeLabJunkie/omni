@@ -4953,7 +4953,7 @@ spec:
         image: longhornio/longhorn-manager:v1.8.1
         imagePullPolicy: IfNotPresent
         securityContext:
-          privileged: true
+          privileged: false
         command:
         - longhorn-manager
         - -d
