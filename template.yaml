@@ -31,7 +31,7 @@ patches:
 
   - name: node-0-disk-sda
     file: patches/k8s-node-0-patch.yaml
-  - name: node-1-disk-sda
+  # - name: node-1-disk-sda
   #   file: patches/k8s-node-1-patch.yaml
   # - name: node-2-disk-sda
   #   file: patches/k8s-node-2-patch.yaml
