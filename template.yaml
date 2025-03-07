@@ -10,6 +10,7 @@ talos:
   version: v1.9.4
 features:
   enableWorkloadProxy: true
+  
 patches:
   - name: enable-workload-on-cp
     file: patches/enable-workload-on-cp.yml
