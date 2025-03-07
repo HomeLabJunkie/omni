@@ -1,0 +1,9 @@
+storage:
+  disks:
+    - device: /dev/disk/by-id/ata-SAMSUNG_MZ7LM960HMJP-00003_S3LHNX0HC02413
+      partitions:
+        - size: 100%
+          filesystem:
+            filesystemType: ext4
+            mountPoint: /var/mnt/sda
+

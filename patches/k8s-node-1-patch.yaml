@@ -1,0 +1,8 @@
+storage:
+  disks:
+    - device: /dev/disk/by-id/ata-TEAM_T2531TB_TPBF2409110020100873
+      partitions:
+        - size: 100%
+          filesystem:
+            filesystemType: ext4
+            mountPoint: /var/mnt/sda
