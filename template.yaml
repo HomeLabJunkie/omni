@@ -29,18 +29,18 @@ patches:
   
 # patches: currently commented out becuase disk are not mounted after applying patches
 
-  # - name: node-0-disk-sda
-  #   file: patches/k8s-node-0-patch.yaml
-  # - name: node-1-disk-sda
-  #   file: patches/k8s-node-1-patch.yaml
-  # - name: node-2-disk-sda
-  #   file: patches/k8s-node-2-patch.yaml
-  # - name: node-3-disk-sda
-  #   file: patches/k8s-node-3-patch.yaml
-  # - name: node-4-disk-sda
-  #   file: patches/k8s-node-4-patch.yaml
-  # - name: node-5-disk-sda
-  #   file: patches/k8s-node-5-patch.yaml
+  - name: node-0-disk-sda
+    file: patches/k8s-node-0-patch.yaml
+  - name: node-1-disk-sda
+    file: patches/k8s-node-1-patch.yaml
+  - name: node-2-disk-sda
+    file: patches/k8s-node-2-patch.yaml
+  - name: node-3-disk-sda
+    file: patches/k8s-node-3-patch.yaml
+  - name: node-4-disk-sda
+    file: patches/k8s-node-4-patch.yaml
+  - name: node-5-disk-sda
+    file: patches/k8s-node-5-patch.yaml
 
 systemExtensions:
   - siderolabs/iscsi-tools
