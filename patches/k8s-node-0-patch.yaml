@@ -1,16 +1,7 @@
 machine:
   kubelet:
-    extraMounts:
-      - destination: /var/mnt/storage
-        type: bind
-        source: /var/mnt/storage
-        options:
-          - bind
-          - rshared
-          - rw
- 
   disks:
-      - device: /dev/disk/by-id/TPBF2409110020100803 # The name of the disk to use.
-#      - device: /dev/sda1 # The name of the disk to use.      
+#      - device: /dev/disk/by-id/ata-TEAM_T2531TB_TPBF2409110020100803 # The name of the disk to use.
+      - device: /dev/sda # The name of the disk to use.      
         partitions:
           - mountpoint: /var/mnt/storage # Where to mount the partition.              
