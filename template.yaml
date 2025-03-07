@@ -24,6 +24,8 @@ patches:
     file: patches/extraManifests.yml
   - name: metric-server
     file: patches/metrics-server.yml
+  - name: extraMounts for Longhorn
+    file: patches/longhorn-extra-mounts.yml
 systemExtensions:
   - siderolabs/iscsi-tools
   - siderolabs/util-linux-tools
