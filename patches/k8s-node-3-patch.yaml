@@ -1,11 +1,13 @@
-kind: MachineConfig
-spec:
-  storage:
+machine:
     disks:
-      - device: /dev/disk/by-id/ata-SAMSUNG_MZ7LM960HMJP-00003_S3LHNX0HC02413
-        partitions:
-          - size: 100%
-            filesystem:
-              filesystemType: ext4
-              mountPoint: /var/mnt/sda
+        - device: /dev/disk/by-id/ata-SAMSUNG_MZ7LM960HMJP-00003_S3LHNX0HC02413 # The name of the disk to use.
+          # A list of partitions to create on the disk.
+          partitions:
+            - mountpoint: /var/mnt/sda # Where to mount the partition.
 
+              # # The size of partition: either bytes or human readable representation. If `size:` is omitted, the partition is sized to occupy the full disk.
+
+              # # Human readable representation.
+              # size: 100 MB
+              # # Precise value in bytes.
+              # size: 1073741824                 
