@@ -945,7 +945,7 @@ spec:
     spec:
       containers:
       - name: cilium-agent
-        image: "quay.io/cilium/cilium:v.1.17.1"
+        image: "quay.io/cilium/cilium:stable"
         imagePullPolicy: IfNotPresent
         command:
         - cilium-agent
