@@ -1,9 +1,11 @@
-storage:
-  disks:
-    - device: /dev/disk/by-id/ata-SAMSUNG_MZ7LM960HMJP-00003_S3LHNX0HC01048
-      partitions:
-        - size: 100%
-          filesystem:
-            filesystemType: ext4
-            mountPoint: /var/mnt/sda
+kind: MachineConfig
+spec:
+  storage:
+    disks:
+      - device: /dev/disk/by-id/ata-SAMSUNG_MZ7LM960HMJP-00003_S3LHNX0HC01048
+        partitions:
+          - size: 100%
+            filesystem:
+              filesystemType: ext4
+              mountPoint: /var/mnt/sda
 
