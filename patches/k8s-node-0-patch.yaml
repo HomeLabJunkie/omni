@@ -1,13 +1,15 @@
 machine:
-    disks:
-        - device: /dev/sda # The name of the disk to use.
-          # A list of partitions to create on the disk.
-          partitions:
-            - mountpoint: /var/mnt/sda # Where to mount the partition.
-
-              # # The size of partition: either bytes or human readable representation. If `size:` is omitted, the partition is sized to occupy the full disk.
-
-              # # Human readable representation.
-              # size: 100 MB
-              # # Precise value in bytes.
-              # size: 1073741824              
+  kubelet:
+    extraMounts:
+      - destination: /var/mnt/storage
+        type: bind
+        source: /var/mnt/storage
+        options:
+          - bind
+          - rshared
+          - rw
+ 
+  disks:
+      - device: /dev/disk/by-id/ata-TEAM_T2531TB_TPBF2409110020100803 # The name of the disk to use.
+        partitions:
+          - mountpoint: /var/mnt/storage # Where to mount the partition.              
