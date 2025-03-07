@@ -1,6 +1,6 @@
 machine:
     disks:
-        - device: /dev/disk/by-id/ata-SAMSUNG_MZ7LM960HMJP-00003_S3LHNX0HC02413 # The name of the disk to use.
+        - device: /dev/sda # The name of the disk to use.
           # A list of partitions to create on the disk.
           partitions:
             - mountpoint: /var/mnt/sda # Where to mount the partition.
