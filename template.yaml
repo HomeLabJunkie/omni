@@ -36,26 +36,8 @@ patches:
   #   file: patches/k8s-node-3-patch.yaml
   # - name: node-4-disk-sda
   #   file: patches/k8s-node-4-patch.yaml
-  - kind: machine
-    name: k8s-node-5
-    patches:
-      - name: node-5-disk-sda
-#        file: patches/k8s-node-5-patch.yaml
-        inline:
-          machine:
-            kubelet:
-              extraMounts:
-                - destination: /var/mnt/storage
-                  type: bind
-                  source: /var/mnt/storage
-                  options:
-                    - bind
-                    - rshared
-                    - rw
-            disks:
-              - device: /dev/sda # The name of the disk to use.
-                partitions:
-                  - mountpoint: /var/mnt/storage # Where to mount the partition.
+  # - name: node-5-disk-sda
+  #   file: patches/k8s-node-5-patch.yaml  
 
 systemExtensions:
   - siderolabs/iscsi-tools
