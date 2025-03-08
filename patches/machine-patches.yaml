@@ -151,8 +151,6 @@ spec:
               - rshared
               - rw
       disks:
-          - device: ata-SAMSUNG_MZ7LM960HMJP-00003_S3LHNX0HC01048 # The name of the disk to use.
+          - device: /dev/disk/by-id/ata-SAMSUNG_MZ7LM960HMJP-00003_S3LHNX0HC01048 # The name of the disk to use.
             partitions:
               - mountpoint: /var/mnt/storage # Where to mount the partition.
----
-
