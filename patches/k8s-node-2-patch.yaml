@@ -1,26 +1,25 @@
-machine:
-  kubelet:
-    # extraMounts:
-    #   - destination: /var/mnt/storage
-    #     type: bind
-    #     source: /var/mnt/storage
-    #     options:
-    #       - bind
-    #       - rshared
-    #       - rw
- 
-  disks:
-      - device: /dev/disk/by-id/ata-SAMSUNG_MZ7LM960HMJP-00003_S3LHNX0HC01642 # The name of the disk to use.
-        partitions:
-          - mountpoint: /var/lib/longhorn # Where to mount the partition.   
-
-
-
-
-
-
-
-
-
-
-
+metadata:
+    namespace: default
+    type: ConfigPatches.omni.sidero.dev
+    id: 500-9c6ac1be-bbe9-4d8f-a188-5d78948c771b
+    labels:
+        omni.sidero.dev/machine: fa99331d-c64b-42c0-878e-5497be58bf7f
+    annotations:
+        description: add 1 TB sda disk
+        name: adddisk
+spec:
+  data: |
+    machine:
+      kubelet:
+        extraMounts:
+          - destination: /var/mnt/storage
+            type: bind
+            source: /var/mnt/storage
+            options:
+              - bind
+              - rshared
+              - rw
+      disks:
+          - device: /dev/disk/by-id/ata-SAMSUNG_MZ7LM960HMJP-00003_S3LHNX0HC01642 # The name of the disk to use.
+            partitions:
+              - mountpoint: /var/mnt/storage # Where to mount the partition.

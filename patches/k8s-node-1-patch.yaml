@@ -1,15 +1,25 @@
-machine:
-  kubelet:
-    # extraMounts:
-    #   - destination: /var/mnt/storage
-    #     type: bind
-    #     source: /var/mnt/storage
-    #     options:
-    #       - bind
-    #       - rshared
-    #       - rw
- 
-  disks:
-      - device: /dev/disk/by-id/ata-TEAM_T2531TB_TPBF2409110020100873 # The name of the disk to use.
-        partitions:
-          - mountpoint: /var/lib/longhorn # Where to mount the partition.                    
+metadata:
+    namespace: default
+    type: ConfigPatches.omni.sidero.dev
+    id: 500-1dc7bcb9-09ef-40d4-a8fc-cf36359d3eee
+    labels:
+        omni.sidero.dev/machine: 5b7675ab-9294-23a3-0f18-742476129205
+    annotations:
+        description: add 1 TB sda disk
+        name: adddisk
+spec:
+  data: |
+    machine:
+      kubelet:
+        extraMounts:
+          - destination: /var/mnt/storage
+            type: bind
+            source: /var/mnt/storage
+            options:
+              - bind
+              - rshared
+              - rw
+      disks:
+          - device: /dev/disk/by-id/ata-TEAM_T2531TB_TPBF2409110020100873 # The name of the disk to use.
+            partitions:
+              - mountpoint: /var/mnt/storage # Where to mount the partition.

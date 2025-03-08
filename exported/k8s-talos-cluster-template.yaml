@@ -1,12 +1,5 @@
 kind: Cluster
-systemExtensions:
-  - siderolabs/iscsi-tools
-  - siderolabs/util-linux-tools
 name: k8s-talos-cluster
-labels:
-  cni: none
-  kubespan: enabled
-  template: "true"
 kubernetes:
   version: v1.32.2
 talos:
@@ -16,67 +9,33 @@ features:
   useEmbeddedDiscoveryService: true
   backupConfiguration:
     interval: 1h0m0s
-patches:
-  - idOverride: 200-cluster-k8s-talos-cluster-enable-workload-on-cp
-    annotations:
-      name: enable-workload-on-cp
-    inline:
-      cluster:
-        allowSchedulingOnControlPlanes: true
-  - idOverride: 201-cluster-k8s-talos-cluster-kubespan-enabled
-    annotations:
-      name: kubespan-enabled
-    inline:
-      machine:
-        network:
-          kubespan:
-            enabled: true
-  - idOverride: 202-cluster-k8s-talos-cluster-no-cni
-    annotations:
-      name: no-cni
-    inline:
-      cluster:
-        network:
-          cni:
-            name: none
-  - idOverride: 203-cluster-k8s-talos-cluster-disable-kubeproxy
-    annotations:
-      name: disable-kubeproxy
-    inline:
-      cluster:
-        proxy:
-          disabled: true
-  - idOverride: 204-cluster-k8s-talos-cluster-install-cilium
-    annotations:
-      name: install-cilium
-    inline:
-      cluster:
-        extraManifests:
-          - https://raw.githubusercontent.com/HomeLabJunkie/omni/refs/heads/main/homelab/extra-manifests/install-cilium.yaml
-          - https://raw.githubusercontent.com/HomeLabJunkie/omni/refs/heads/main/homelab/extra-manifests/L2Announcement.yaml
-          - https://raw.githubusercontent.com/HomeLabJunkie/omni/refs/heads/main/homelab/extra-manifests/ip-pool.yml
-          - https://raw.githubusercontent.com/HomeLabJunkie/omni/refs/heads/main/homelab/extra-manifests/stand-alone-install.yaml
-          - https://raw.githubusercontent.com/HomeLabJunkie/omni/refs/heads/main/homelab/extra-manifests/components.yaml
-          - https://raw.githubusercontent.com/HomeLabJunkie/omni/refs/heads/main/homelab/extra-manifests/longhorn.yaml
-  - idOverride: 205-cluster-k8s-talos-cluster-metric-server
-    annotations:
-      name: metric-server
-    inline:
-      machine:
-        kubelet:
-          extraArgs:
-            rotate-server-certificates: true
 ---
 kind: ControlPlane
-labels:
-  type: control-plane
-machineClass:
-  name: k8s-talos-cluster-controlplane
-  size: 3
+machines:
+  - 5b7675ab-9294-23a3-0f18-742476129205
+  - c12b8cf7-6e73-24c9-308b-3c6689f59028
+  - fa99331d-c64b-42c0-878e-5497be58bf7f
 ---
 kind: Workers
-labels:
-  type: worker
-machineClass:
-  name: k8s-talos-cluster-workers
-  size: Unlimited
+machines:
+  - 5aa03ceb-d97e-6b59-d293-9c1708fadaa8
+  - 6680f42c-8187-0cac-dc4c-4f836fe99873
+  - 8ce140e0-700a-6760-eb28-274c903327ef
+---
+kind: Machine
+name: 5aa03ceb-d97e-6b59-d293-9c1708fadaa8
+---
+kind: Machine
+name: 5b7675ab-9294-23a3-0f18-742476129205
+---
+kind: Machine
+name: 6680f42c-8187-0cac-dc4c-4f836fe99873
+---
+kind: Machine
+name: 8ce140e0-700a-6760-eb28-274c903327ef
+---
+kind: Machine
+name: c12b8cf7-6e73-24c9-308b-3c6689f59028
+---
+kind: Machine
+name: fa99331d-c64b-42c0-878e-5497be58bf7f
