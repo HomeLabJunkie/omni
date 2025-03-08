@@ -27,3 +27,5 @@ To apply the template to the cluster, run:
 ```bash
 omnictl cluster template sync --file template.yaml
 ```
+
+![image](https://github.com/user-attachments/assets/d57dbfbd-b3b7-413a-9ccb-bfaa955d2238)
