@@ -20,6 +20,6 @@ spec:
               - rshared
               - rw
       disks:
-          - device: /dev/disk/by-id/ata-TEAM_T2531TB_TPBF2409110020100885 # The name of the disk to use.
+          - device: ata-SAMSUNG_MZ7LM960HMJP-00003_S3LHNX0HC01048 # The name of the disk to use.
             partitions:
               - mountpoint: /var/mnt/storage # Where to mount the partition.
