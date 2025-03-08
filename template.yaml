@@ -27,8 +27,8 @@ patches:
   # - name: extraMounts for Longhorn
   #   file: patches/longhorn-extra-mounts.yml
   
-  - name: node-0-disk-sda
-    file: patches/k8s-node-0-patch.yaml
+  # - name: node-0-disk-sda
+  #   file: patches/k8s-node-0-patch.yaml
   # - name: node-1-disk-sda
   #   file: patches/k8s-node-1-patch.yaml
   # - name: node-2-disk-sda
