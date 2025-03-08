@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: node-debugger-priv
+  name: node-debugger-2
   namespace: kube-system
 spec:
   containers:
@@ -31,7 +31,7 @@ spec:
   priority: 0
   restartPolicy: Never
   serviceAccountName: default
-  nodeName: k8s-node-5 # Change this to the node you want to run the pod on
+  nodeName: k8s-node-2 # Change this to the node you want to run the pod on
   tolerations:
   - operator: Exists
   volumes:

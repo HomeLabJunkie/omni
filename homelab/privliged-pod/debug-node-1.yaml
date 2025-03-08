@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: node-debugger-1
+  namespace: kube-system
+spec:
+  containers:
+  - image: ubuntu
+    securityContext:
+      privileged: true
+    name: debugger
+    stdin: true
+    tty: true
+    volumeMounts:
+    - mountPath: /host
+      name: host-root
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-ckmc9
+      readOnly: true
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"      
+  hostIPC: true
+  hostNetwork: true
+  hostPID: true
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Never
+  serviceAccountName: default
+  nodeName: k8s-node-1 # Change this to the node you want to run the pod on
+  tolerations:
+  - operator: Exists
+  volumes:
+  - hostPath:
+      path: /
+    name: host-root
+  - name: kube-api-access-ckmc9
+    projected:
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              fieldPath: metadata.namespace
+            path: namespace
