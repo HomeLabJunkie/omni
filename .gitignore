@@ -26,3 +26,4 @@ Brewfile.lock.json
 /config.yaml
 cloudflared.json
 **/*.tmp.[extension]
+old-template.yaml
