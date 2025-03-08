@@ -1,8 +1,8 @@
 cluster:
-  extraManifests: 
+  extraManifests:
    - https://raw.githubusercontent.com/HomeLabJunkie/omni/refs/heads/main/homelab/extra-manifests/install-cilium.yaml
    - https://raw.githubusercontent.com/HomeLabJunkie/omni/refs/heads/main/homelab/extra-manifests/L2Announcement.yaml
    - https://raw.githubusercontent.com/HomeLabJunkie/omni/refs/heads/main/homelab/extra-manifests/ip-pool.yml
    - https://raw.githubusercontent.com/HomeLabJunkie/omni/refs/heads/main/homelab/extra-manifests/stand-alone-install.yaml
    - https://raw.githubusercontent.com/HomeLabJunkie/omni/refs/heads/main/homelab/extra-manifests/components.yaml
-#   - https://raw.githubusercontent.com/HomeLabJunkie/omni/refs/heads/main/homelab/extra-manifests/longhorn.yaml
+   - https://raw.githubusercontent.com/HomeLabJunkie/omni/refs/heads/main/homelab/extra-manifests/longhorn.yaml
