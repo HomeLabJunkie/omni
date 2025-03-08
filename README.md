@@ -1,7 +1,7 @@
 
 # Talos Omni template
 
-This is a template for Omni that can be used to create a cluster with a predefined configurations.
+This is a template for Omni that can be used to create a 6-node cluster (3 ControlPlane and 3 Worker) with a predefined configurations.
 
 ## Features
 
@@ -12,7 +12,7 @@ This is a template for Omni that can be used to create a cluster with a predefin
     - Install Cilium CNI.
     - Add an IP Pool for Cilium L2 Annoucements.
     - Active Cilium L2 Annoucements.
-    - Install Longhorn
+    - Install Longhorn and add 1 additional disk per node
 
 ## Usage
 
