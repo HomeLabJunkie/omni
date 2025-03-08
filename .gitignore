@@ -1,3 +1,28 @@
 # Core
 # list file here not to put in Github
 minio_config
+# Trash
+.DS_Store
+Thumbs.db
+# k8s
+kubeconfig
+talosconfig
+.decrypted~*.yaml
+*.agekey
+*.pub
+*.key
+# Private
+.private
+.bin
+# Ansible
+.venv*
+# Taskfile
+.task
+# Brew
+Brewfile.lock.json
+# intellij
+.idea
+# Bootstrap
+/config.yaml
+cloudflared.json
+**/*.tmp.[extension]
