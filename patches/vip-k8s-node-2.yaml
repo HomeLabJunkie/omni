@@ -1,0 +1,23 @@
+# Apply this path using omnictl apply -f vip-k8s-node-2.yaml
+# Optain the patch with omnictl get -o yaml configpatch <UUID of Patch in omni dashboard> > outputpatch.yaml
+---
+metadata:
+    namespace: default
+    type: ConfigPatches.omni.sidero.dev
+    id: 500-1b920f3b-b325-4f7f-8078-8b6480308eff
+    labels:
+        omni.sidero.dev/machine: fa99331d-c64b-42c0-878e-5497be58bf7f
+    annotations:
+        description: add vip ip address
+        name: vip
+spec:
+    data: |-
+        machine:
+          network:
+            interfaces:
+              - deviceSelector:
+                  physical: true # should select any hardware network device, if you have just one, it will be selected
+                dhcp: true
+                vip:
+                  ip: 192.168.1.216
+#    compresseddata: []
