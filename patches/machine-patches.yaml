@@ -1,6 +1,6 @@
 ---
-# Apply this path using omnictl apply -f machine-patches.yaml
-# Optain the patch with omnictl get -o yaml configpatch <UUID of Patch in omni dashboard> > outputpatch.yaml
+## Apply this path using omnictl apply -f machine-patches.yaml
+## Optain the patch with omnictl get -o yaml configpatch <UUID of Patch in omni dashboard> > outputpatch.yaml
 
 # This is a machine patch that adds a disk to k8s-node-0.
 # The patch is applied to the machine with the label omni.sidero.dev/machine: c12b8cf7-6e73-24c9-308b-3c6689f59028
@@ -31,7 +31,6 @@ spec:
             partitions:
               - mountpoint: /var/mnt/storage # Where to mount the partition.
 ---
-
 # This is a machine patch that adds a disk to k8s-node-1.
 # The patch is applied to the machine with the label omni.sidero.dev/machine: 5b7675ab-9294-23a3-0f18-742476129205
 
