@@ -20,12 +20,12 @@ To use this template, you need to have the Omni CLI installed. You can find the 
 
 To check differences between the template and the current cluster configuration, run:
 ```bash
-omnictl cluster template diff --file template.yaml
+omnictl cluster template diff --file k8s-cluster-template.yaml
 ```
 
 To apply the template to the cluster, run:
 ```bash
-omnictl cluster template sync --file template.yaml
+omnictl cluster template sync --file k8s-cluster-template.yaml
 ```
 ![image](https://github.com/user-attachments/assets/c169fc6a-eb86-41a5-979f-6761006190bc)
 
