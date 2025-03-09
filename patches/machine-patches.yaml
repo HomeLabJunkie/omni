@@ -4,7 +4,7 @@
 
 # This is a machine patch that adds a disk to k8s-node-0.
 # The patch is applied to the machine with the label omni.sidero.dev/machine: c12b8cf7-6e73-24c9-308b-3c6689f59028
-# This also adds vip ip address of 192.168.1.216 to ControlPlane nodes.
+
 metadata:
     namespace: default
     type: ConfigPatches.omni.sidero.dev
@@ -31,29 +31,10 @@ spec:
             partitions:
               - mountpoint: /var/mnt/storage # Where to mount the partition.
 ---
-metadata:
-    namespace: default
-    type: ConfigPatches.omni.sidero.dev
-    id: 500-bdc07e92-d45c-4281-a1ae-2c9423803517
-    labels:
-        omni.sidero.dev/machine: c12b8cf7-6e73-24c9-308b-3c6689f59028
-    annotations:
-        description: add vip ip address
-        name: vip
-spec:
-  data: |-
-    machine:
-      network:
-        interfaces:
-          - deviceSelector:
-              physical: true # should select any hardware network device, if you have just one, it will be selected
-            dhcp: true
-            vip:
-              ip: 192.168.1.216
----
+
 # This is a machine patch that adds a disk to k8s-node-1.
 # The patch is applied to the machine with the label omni.sidero.dev/machine: 5b7675ab-9294-23a3-0f18-742476129205
-# This also adds vip ip address of 192.168.1.216 to ControlPlane nodes.
+
 metadata:
     namespace: default
     type: ConfigPatches.omni.sidero.dev
@@ -79,17 +60,10 @@ spec:
           - device: /dev/disk/by-id/ata-TEAM_T2531TB_TPBF2409110020100873 # The name of the disk to use.
             partitions:
               - mountpoint: /var/mnt/storage # Where to mount the partition.
-      network:
-        interfaces:
-          - deviceSelector:
-              physical: true # should select the physical network interface.
-            dhcp: true
-            vip:
-              ip: 192.168.1.216
 ---
 # This is a machine patch that adds a disk to k8s-node-2.
 # The patch is applied to the machine with the label omni.sidero.dev/machine: fa99331d-c64b-42c0-878e-5497be58bf7f
-# This also adds vip ip address of 192.168.1.216 to ControlPlane nodes.
+
 metadata:
     namespace: default
     type: ConfigPatches.omni.sidero.dev
@@ -115,16 +89,10 @@ spec:
           - device: /dev/disk/by-id/ata-SAMSUNG_MZ7LM960HMJP-00003_S3LHNX0HC01642 # The name of the disk to use.
             partitions:
               - mountpoint: /var/mnt/storage # Where to mount the partition.
-      network:
-        interfaces:
-          - deviceSelector:
-              physical: true # should select the physical network interface.
-            dhcp: true
-            vip:
-              ip: 192.168.1.216
 ---
 # This is a machine patch that adds a disk to k8s-node-3.
 # The patch is applied to the machine with the label omni.sidero.dev/machine: 6680f42c-8187-0cac-dc4c-4f836fe99873
+
 metadata:
     namespace: default
     type: ConfigPatches.omni.sidero.dev
