@@ -84,7 +84,7 @@ data:
   operator-prometheus-serve-addr: ":9963"
   enable-metrics: "true"
   enable-envoy-config: "true"
-  enable-ingress-controller: "false"
+  enable-ingress-controller: "true"
   enforce-ingress-https: "true"
   enable-ingress-proxy-protocol: "false"
   enable-ingress-secrets-sync: "true"
