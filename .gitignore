@@ -29,4 +29,5 @@ cloudflared.json
 old-template.yaml
 apps
 kompose
+discovery-service
 
