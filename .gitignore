@@ -28,3 +28,5 @@ cloudflared.json
 **/*.tmp.[extension]
 old-template.yaml
 apps
+kompose
+
