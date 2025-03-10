@@ -1,4 +1,4 @@
-# Apply the following command to create the cluster
+# Apply the following command to create the cluster.
 # omnictl cluster template sync --file k8s-cluster-template.yaml
 ---
 kind: Cluster
