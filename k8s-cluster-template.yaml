@@ -5,6 +5,7 @@ kind: Cluster
 systemExtensions:
   - siderolabs/iscsi-tools
   - siderolabs/util-linux-tools
+#  - siderolabs/cloudflared  
 name: k8s-talos-cluster
 labels:
   cni: none
