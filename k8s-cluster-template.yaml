@@ -1,5 +1,6 @@
 # Apply the following command to create the cluster.
 # omnictl cluster template sync --file k8s-cluster-template.yaml
+# then apply machine-patches.yaml and vip-k8s-node-#.yaml
 ---
 kind: Cluster
 systemExtensions:
@@ -12,9 +13,9 @@ labels:
   kubespan: enabled
   template: "true"
 kubernetes:
-  version: v1.32.2
+  version: v1.32.3
 talos:
-  version: v1.9.4
+  version: v1.9.5
 features:
   enableWorkloadProxy: true
   useEmbeddedDiscoveryService: true
