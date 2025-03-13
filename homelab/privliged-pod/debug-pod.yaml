@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: node-debugger-manual
+  namespace: debug
+spec:
+  containers:
+  - name: debugger
+    image: nicolaka/netshoot
+    command: ["sh", "-c", "sleep infinity"]
+    securityContext:
+      privileged: false
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+  hostNetwork: false
+  hostPID: false
+  hostIPC: false
+  volumes: []
