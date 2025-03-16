@@ -1,0 +1,62 @@
+{
+    "apiVersion": "v1",
+    "kind": "Namespace",
+    "metadata": {
+        "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Namespace\",\"metadata\":{\"annotations\":{},\"name\":\"longhorn-system\"}}\n"
+        },
+        "creationTimestamp": "2025-03-16T04:56:35Z",
+        "deletionTimestamp": "2025-03-16T13:45:55Z",
+        "labels": {
+            "kubernetes.io/metadata.name": "longhorn-system"
+        },
+        "name": "longhorn-system",
+        "resourceVersion": "1118864",
+        "uid": "6b09a7b3-45e5-4ca2-b65d-2d4744ab8f4b"
+    },
+    "spec": {
+        "finalizers": [
+            "kubernetes"
+        ]
+    },
+    "status": {
+        "conditions": [
+            {
+                "lastTransitionTime": "2025-03-16T13:46:03Z",
+                "message": "All resources successfully discovered",
+                "reason": "ResourcesDiscovered",
+                "status": "False",
+                "type": "NamespaceDeletionDiscoveryFailure"
+            },
+            {
+                "lastTransitionTime": "2025-03-16T13:46:03Z",
+                "message": "All legacy kube types successfully parsed",
+                "reason": "ParsedGroupVersions",
+                "status": "False",
+                "type": "NamespaceDeletionGroupVersionParsingFailure"
+            },
+            {
+                "lastTransitionTime": "2025-03-16T13:46:03Z",
+                "message": "Failed to delete all resource types, 2 remaining: Internal error occurred: failed calling webhook \"validator.longhorn.io\": failed to call webhook: Post \"https://longhorn-admission-webhook.longhorn-system.svc:9502/v1/webhook/validation?timeout=10s\": service \"longhorn-admission-webhook\" not found, Internal error occurred: failed calling webhook \"validator.longhorn.io\": failed to call webhook: Post \"https://longhorn-admission-webhook.longhorn-system.svc:9502/v1/webhook/validation?timeout=10s\": service \"longhorn-admission-webhook\" not found",
+                "reason": "ContentDeletionFailed",
+                "status": "True",
+                "type": "NamespaceDeletionContentFailure"
+            },
+            {
+                "lastTransitionTime": "2025-03-16T13:46:03Z",
+                "message": "Some resources are remaining: engines.longhorn.io has 1 resource instances, snapshots.longhorn.io has 1 resource instances, systembackups.longhorn.io has 1 resource instances, volumeattachments.longhorn.io has 1 resource instances, volumes.longhorn.io has 1 resource instances",
+                "reason": "SomeResourcesRemain",
+                "status": "True",
+                "type": "NamespaceContentRemaining"
+            },
+            {
+                "lastTransitionTime": "2025-03-16T13:46:03Z",
+                "message": "Some content in the namespace has finalizers remaining: longhorn.io in 5 resource instances",
+                "reason": "SomeFinalizersRemain",
+                "status": "True",
+                "type": "NamespaceFinalizersRemaining"
+            }
+        ],
+        "phase": "Terminating"
+    }
+}

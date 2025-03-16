@@ -75,14 +75,16 @@ patches:
 kind: ControlPlane
 machines:
   - 5b7675ab-9294-23a3-0f18-742476129205
-  - c12b8cf7-6e73-24c9-308b-3c6689f59028
   - fa99331d-c64b-42c0-878e-5497be58bf7f
----
-kind: Workers
-machines:
   - 5aa03ceb-d97e-6b59-d293-9c1708fadaa8
   - 6680f42c-8187-0cac-dc4c-4f836fe99873
   - 8ce140e0-700a-6760-eb28-274c903327ef
+---
+kind: Workers
+machines:
+  # - 5aa03ceb-d97e-6b59-d293-9c1708fadaa8
+  # - 6680f42c-8187-0cac-dc4c-4f836fe99873
+  # - 8ce140e0-700a-6760-eb28-274c903327ef
 ---
 kind: Machine
 name: 5aa03ceb-d97e-6b59-d293-9c1708fadaa8
@@ -95,9 +97,6 @@ name: 6680f42c-8187-0cac-dc4c-4f836fe99873
 ---
 kind: Machine
 name: 8ce140e0-700a-6760-eb28-274c903327ef
----
-kind: Machine
-name: c12b8cf7-6e73-24c9-308b-3c6689f59028
 ---
 kind: Machine
 name: fa99331d-c64b-42c0-878e-5497be58bf7f
