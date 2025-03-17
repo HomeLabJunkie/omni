@@ -1,15 +1,15 @@
-# Apply this path using omnictl apply -f vip-k8s-node-0.yaml
+# Apply this path using omnictl apply -f vip-k8s-node-3.yaml
 # Optain the patch with omnictl get -o yaml configpatch <UUID of Patch in omni dashboard> > outputpatch.yaml
----
+
 metadata:
     namespace: default
     type: ConfigPatches.omni.sidero.dev
-    id: 500-3d1b73c5-1ee5-45e3-aa65-70c78b2e82a7
+    id: 500-38ef4e51-7b92-45a2-bb08-2a0bd762b3b5
     labels:
-        omni.sidero.dev/machine: c12b8cf7-6e73-24c9-308b-3c6689f59028
+        omni.sidero.dev/machine: 6680f42c-8187-0cac-dc4c-4f836fe99873
     annotations:
-        description: Add VIP IP address to Control Plane nodes
-        name: add-vip
+        description: add vip to ControlPlane node
+        name: add vip
 spec:
     data: |-
         machine:
@@ -20,4 +20,4 @@ spec:
                 dhcp: true
                 vip:
                   ip: 192.168.1.216
-#    compresseddata: []
+    compresseddata: []
