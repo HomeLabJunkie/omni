@@ -74,29 +74,41 @@ patches:
 ---
 kind: ControlPlane
 machines:
-  - 5b7675ab-9294-23a3-0f18-742476129205
-  - fa99331d-c64b-42c0-878e-5497be58bf7f
-  - 5aa03ceb-d97e-6b59-d293-9c1708fadaa8
-  - 6680f42c-8187-0cac-dc4c-4f836fe99873
-  - 8ce140e0-700a-6760-eb28-274c903327ef
+  # - 5b7675ab-9294-23a3-0f18-742476129205
+  # - fa99331d-c64b-42c0-878e-5497be58bf7f
+  # - 5aa03ceb-d97e-6b59-d293-9c1708fadaa8
+  # - 6680f42c-8187-0cac-dc4c-4f836fe99873
+  # - 8ce140e0-700a-6760-eb28-274c903327ef
+  - db83a417-6cca-4973-a0e2-a3e4629b858e
+  - a26957a4-1371-4dc5-8c7b-fe5e99fa8e62
+  - 6f485488-9b48-450a-a6cc-0f8d7dcbf7e7
 ---
 kind: Workers
 machines:
   # - 5aa03ceb-d97e-6b59-d293-9c1708fadaa8
   # - 6680f42c-8187-0cac-dc4c-4f836fe99873
   # - 8ce140e0-700a-6760-eb28-274c903327ef
+#---
+# kind: Machine
+# name: 5aa03ceb-d97e-6b59-d293-9c1708fadaa8
+# ---
+# kind: Machine
+# name: 5b7675ab-9294-23a3-0f18-742476129205
+# ---
+# kind: Machine
+# name: 6680f42c-8187-0cac-dc4c-4f836fe99873
+# ---
+# kind: Machine
+# name: 8ce140e0-700a-6760-eb28-274c903327ef
+# ---
+# kind: Machine
+# name: fa99331d-c64b-42c0-878e-5497be58bf7f
 ---
 kind: Machine
-name: 5aa03ceb-d97e-6b59-d293-9c1708fadaa8
+name: db83a417-6cca-4973-a0e2-a3e4629b858e
 ---
 kind: Machine
-name: 5b7675ab-9294-23a3-0f18-742476129205
+name: a26957a4-1371-4dc5-8c7b-fe5e99fa8e62
 ---
 kind: Machine
-name: 6680f42c-8187-0cac-dc4c-4f836fe99873
----
-kind: Machine
-name: 8ce140e0-700a-6760-eb28-274c903327ef
----
-kind: Machine
-name: fa99331d-c64b-42c0-878e-5497be58bf7f
+name: 6f485488-9b48-450a-a6cc-0f8d7dcbf7e7
