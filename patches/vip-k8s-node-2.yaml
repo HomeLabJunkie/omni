@@ -6,7 +6,7 @@ metadata:
     type: ConfigPatches.omni.sidero.dev
     id: 500-1b920f3b-b325-4f7f-8078-8b6480308eff
     labels:
-        omni.sidero.dev/machine: fa99331d-c64b-42c0-878e-5497be58bf7f
+        omni.sidero.dev/machine: 4c4c4544-005a-5410-804e-b3c04f363733 #UUID From node log
     annotations:
         description: add vip ip address
         name: vip
