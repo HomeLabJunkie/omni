@@ -12,7 +12,7 @@ This is a template for Omni that can be used to create a 6-node cluster (3 Contr
     - Install Cilium CNI.
     - Add an IP Pool for Cilium L2 Annoucements.
     - Active Cilium L2 Annoucements.
-    - Install Longhorn and add 1 additional disk per node
+    - Add 500 GB Crucial SSD per node & Install Longhorn Storage
 
 ## Usage
 
