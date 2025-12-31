@@ -786,7 +786,7 @@ Longhorn can be deployed via static YAML manifests, but on **Talos Linux with Ci
 
 ### Configure Backups
 
-Set up S3-compatible backup target:
+Set up S3-compatible backup target: [ See Trilium Notes - Minio S3 on TrueNAS for Longhorn Backup Target ]]
 ```bash
 # Example: Configure AWS S3 backup
 kubectl -n longhorn-system create secret generic aws-secret \
