@@ -82,6 +82,7 @@ data:
     priority-class: longhorn-critical
     disable-revision-counter: true
     default-data-path: /var/mnt/storage
+    kubelet-root-dir: /var/lib/kubelet
 ---
 # Source: longhorn/templates/storageclass.yaml
 apiVersion: v1
