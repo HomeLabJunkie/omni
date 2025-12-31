@@ -1,48 +1,19 @@
 ---
-## Apply this path using omnictl apply -f machine-patches.yaml
-## Optain the patch with omnictl get -o yaml configpatch <UUID of Patch in omni dashboard> > outputpatch.yaml
+## Apply this patch using: omnictl apply -f machine-patches.yaml
+## To retrieve a patch: omnictl get -o yaml configpatch <UUID of Patch> > outputpatch.yaml
 
-# This is a machine patch that adds a disk to k8s-node-#.
-# The patch is applied to the machine with the label omni.sidero.dev/machine: c12b8cf7-6e73-24c9-308b-3c6689f59028
-
-# metadata:
-#     namespace: default
-#     type: ConfigPatches.omni.sidero.dev
-#     id: 500-39d1e867-0ae1-483b-8c76-d6742edd3146
-#     labels:
-#         omni.sidero.dev/machine: c12b8cf7-6e73-24c9-308b-3c6689f59028
-#     annotations:
-#         description: add 500 GB sda disk
-#         name: adddisk
-# spec:
-#   data: |
-#     machine:
-#       kubelet:
-#         extraMounts:
-#           - destination: /var/mnt/storage
-#             type: bind
-#             source: /var/mnt/storage
-#             options:
-#               - bind
-#               - rshared
-#               - rw
-#       disks:
-#           - device: /dev/disk/by-id/ata-TEAM_T2531TB_TPBF2409110020100803 # The name of the disk to use.
-#             partitions:
-#               - mountpoint: /var/mnt/storage # Where to mount the partition.
-# ---
-# This is a machine patch that adds a disk to k8s-node-1.
-# The patch is applied to the machine with the label omni.sidero.dev/machine: 5b7675ab-9294-23a3-0f18-742476129205
+# This is a machine patch that adds a 500GB CT500MX500SSD1 disk to omni-talos-1 (192.168.0.231)
+# The patch is applied to the machine with ID: 4c4c4544-0035-3810-8038-b4c04f444d33
 
 metadata:
     namespace: default
     type: ConfigPatches.omni.sidero.dev
-    id: 500-1dc7bcb9-09ef-40d4-a8fc-cf36359d3eee
+    id: 500-231-storage-disk
     labels:
-        omni.sidero.dev/machine: 5b7675ab-9294-23a3-0f18-742476129205
+        omni.sidero.dev/machine: 4c4c4544-0035-3810-8038-b4c04f444d33
     annotations:
-        description: add 500 GB sda disk
-        name: adddisk
+        description: add 500 GB sda disk (CT500MX500SSD1) to omni-talos-1
+        name: storage-disk-231
 spec:
   data: |
     machine:
@@ -56,22 +27,22 @@ spec:
               - rshared
               - rw
       disks:
-          - device: /dev/disk/by-id/ata-TEAM_T2531TB_TPBF2409110020100873 # The name of the disk to use.
+          - device: /dev/disk/by-id/ata-CT500MX500SSD1_2007E28A9F01
             partitions:
-              - mountpoint: /var/mnt/storage # Where to mount the partition.
+              - mountpoint: /var/mnt/storage
 ---
-# This is a machine patch that adds a disk to k8s-node-2.
-# The patch is applied to the machine with the label omni.sidero.dev/machine: fa99331d-c64b-42c0-878e-5497be58bf7f
+# This is a machine patch that adds a 500GB CT500MX500SSD1 disk to omni-talos-2 (192.168.0.232)
+# The patch is applied to the machine with ID: 4c4c4544-005a-5410-804e-b3c04f363733
 
 metadata:
     namespace: default
     type: ConfigPatches.omni.sidero.dev
-    id: 500-9c6ac1be-bbe9-4d8f-a188-5d78948c771b
+    id: 500-232-storage-disk
     labels:
-        omni.sidero.dev/machine: fa99331d-c64b-42c0-878e-5497be58bf7f
+        omni.sidero.dev/machine: 4c4c4544-005a-5410-804e-b3c04f363733
     annotations:
-        description: add 500 GB sda disk
-        name: adddisk
+        description: add 500 GB sda disk (CT500MX500SSD1) to omni-talos-2
+        name: storage-disk-232
 spec:
   data: |
     machine:
@@ -85,22 +56,22 @@ spec:
               - rshared
               - rw
       disks:
-          - device: /dev/disk/by-id/ata-SAMSUNG_MZ7LM960HMJP-00003_S3LHNX0HC01642 # The name of the disk to use.
+          - device: /dev/disk/by-id/ata-CT500MX500SSD1_2007E28A9BBF
             partitions:
-              - mountpoint: /var/mnt/storage # Where to mount the partition.
+              - mountpoint: /var/mnt/storage
 ---
-# This is a machine patch that adds a disk to k8s-node-3.
-# The patch is applied to the machine with the label omni.sidero.dev/machine: 6680f42c-8187-0cac-dc4c-4f836fe99873
+# This is a machine patch that adds a 500GB CT500MX500SSD1 disk to omni-talos-3 (192.168.0.233)
+# The patch is applied to the machine with ID: 4c4c4544-0033-3810-8038-c8c04f444d33
 
 metadata:
     namespace: default
     type: ConfigPatches.omni.sidero.dev
-    id: 500-8ce48d54-fb54-433f-baa6-5eac939f9f45
+    id: 500-233-storage-disk
     labels:
-        omni.sidero.dev/machine: 6680f42c-8187-0cac-dc4c-4f836fe99873
+        omni.sidero.dev/machine: 4c4c4544-0033-3810-8038-c8c04f444d33
     annotations:
-        description: add 500 GB sda disk
-        name: adddisk
+        description: add 500 GB sda disk (CT500MX500SSD1) to omni-talos-3
+        name: storage-disk-233
 spec:
   data: |
     machine:
@@ -114,22 +85,22 @@ spec:
               - rshared
               - rw
       disks:
-          - device: /dev/disk/by-id/ata-SAMSUNG_MZ7LM960HMJP-00003_S3LHNX0HC02413 # The name of the disk to use.
+          - device: /dev/disk/by-id/ata-CT500MX500SSD1_2007E28A9824
             partitions:
-              - mountpoint: /var/mnt/storage # Where to mount the partition.
+              - mountpoint: /var/mnt/storage
 ---
-# This is a machine patch that adds a disk to k8s-node-4.
-# The patch is applied to the machine with the label omni.sidero.dev/machine: 5aa03ceb-d97e-6b59-d293-9c1708fadaa8
-#
+# This is a machine patch that adds a 500GB CT500MX500SSD1 disk to omni-talos-4 (192.168.0.234)
+# The patch is applied to the machine with ID: 4c4c4544-005a-5310-8050-b3c04f363733
+
 metadata:
     namespace: default
     type: ConfigPatches.omni.sidero.dev
-    id: 500-7460f8b4-73d3-4731-b1f9-5c2df5539676
+    id: 500-234-storage-disk
     labels:
-        omni.sidero.dev/machine: 5aa03ceb-d97e-6b59-d293-9c1708fadaa8
+        omni.sidero.dev/machine: 4c4c4544-005a-5310-8050-b3c04f363733
     annotations:
-        description: add 500 GB sda disk
-        name: adddisk
+        description: add 500 GB sda disk (CT500MX500SSD1) to omni-talos-4
+        name: storage-disk-234
 spec:
   data: |
     machine:
@@ -143,22 +114,22 @@ spec:
               - rshared
               - rw
       disks:
-          - device: /dev/disk/by-id/ata-TEAM_T2531TB_TPBF2409110020100885 # The name of the disk to use.
+          - device: /dev/disk/by-id/ata-CT500MX500SSD1_2007E28A9E77
             partitions:
-              - mountpoint: /var/mnt/storage # Where to mount the partition.
+              - mountpoint: /var/mnt/storage
 ---
-# This is a machine patch that adds a disk to k8s-node-5.
-# The patch is applied to the machine with the label omni.sidero.dev/machine: 8ce140e0-700a-6760-eb28-274c903327ef
-#
+# This is a machine patch that adds a 500GB CT500MX500SSD1 disk to omni-talos-5 (192.168.0.235)
+# The patch is applied to the machine with ID: 4c4c4544-0056-3510-8033-b2c04f335133
+
 metadata:
     namespace: default
     type: ConfigPatches.omni.sidero.dev
-    id: 500-2e647bf6-61cf-42bd-a251-38cc2b89219e
+    id: 500-235-storage-disk
     labels:
-        omni.sidero.dev/machine: 8ce140e0-700a-6760-eb28-274c903327ef
+        omni.sidero.dev/machine: 4c4c4544-0056-3510-8033-b2c04f335133
     annotations:
-        description: add 500 GB sda disk
-        name: adddisk
+        description: add 500 GB sda disk (CT500MX500SSD1) to omni-talos-5
+        name: storage-disk-235
 spec:
   data: |
     machine:
@@ -172,6 +143,6 @@ spec:
               - rshared
               - rw
       disks:
-          - device: /dev/disk/by-id/ata-SAMSUNG_MZ7LM960HMJP-00003_S3LHNX0HC01048 # The name of the disk to use.
+          - device: /dev/disk/by-id/ata-CT500MX500SSD1_2007E28A9F2F
             partitions:
-              - mountpoint: /var/mnt/storage # Where to mount the partition.
+              - mountpoint: /var/mnt/storage
