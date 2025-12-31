@@ -697,6 +697,11 @@ spec:
                       type: integer
                     state:
                       type: string
+                    uuid:
+                      type: string
+                    virtualSize:
+                      format: int64
+                      type: integer
                   type: object
                 nullable: true
                 type: object
@@ -1388,6 +1393,9 @@ spec:
       jsonPath: .status.lastSyncedAt
       name: LastSyncedAt
       type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
     name: v1beta1
     schema:
       openAPIV3Schema:
@@ -2893,7 +2901,6 @@ spec:
                       description: Type is the type of the condition.
                       type: string
                   type: object
-                nullable: true
                 type: array
               ownerID:
                 type: string
@@ -4839,6 +4846,7 @@ spec:
   type: ClusterIP
   selector:
     app: longhorn-manager
+ 
   ports:
   - name: manager
     port: 9500
@@ -5189,4 +5197,3 @@ spec:
       priorityClassName: "longhorn-critical"
 ---
 # Source: longhorn/templates/validate-psp-install.yaml
-#
