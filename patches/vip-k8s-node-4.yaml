@@ -6,7 +6,7 @@ metadata:
     type: ConfigPatches.omni.sidero.dev
     id: 500-84cb4d12-4bf3-4e77-b283-e62dfe51fbbb
     labels:
-        omni.sidero.dev/machine: 7a5ef524-f5d8-4d58-b542-b89800a2ab38 #UUID From node log
+        omni.sidero.dev/machine: 4c4c4544-005a-5310-8050-b3c04f363733 #UUID From node log
     annotations:
         description: add vip to ControlPlane node
         name: add vip
