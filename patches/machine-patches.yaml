@@ -2,7 +2,7 @@
 ## Apply this path using omnictl apply -f machine-patches.yaml
 ## Optain the patch with omnictl get -o yaml configpatch <UUID of Patch in omni dashboard> > outputpatch.yaml
 
-# This is a machine patch that adds a disk to k8s-node-0.
+# This is a machine patch that adds a disk to k8s-node-#.
 # The patch is applied to the machine with the label omni.sidero.dev/machine: c12b8cf7-6e73-24c9-308b-3c6689f59028
 
 # metadata:
@@ -12,7 +12,7 @@
 #     labels:
 #         omni.sidero.dev/machine: c12b8cf7-6e73-24c9-308b-3c6689f59028
 #     annotations:
-#         description: add 1 TB sda disk
+#         description: add 500 GB sda disk
 #         name: adddisk
 # spec:
 #   data: |
@@ -41,7 +41,7 @@ metadata:
     labels:
         omni.sidero.dev/machine: 5b7675ab-9294-23a3-0f18-742476129205
     annotations:
-        description: add 1 TB sda disk
+        description: add 500 GB sda disk
         name: adddisk
 spec:
   data: |
@@ -70,7 +70,7 @@ metadata:
     labels:
         omni.sidero.dev/machine: fa99331d-c64b-42c0-878e-5497be58bf7f
     annotations:
-        description: add 1 TB sda disk
+        description: add 500 GB sda disk
         name: adddisk
 spec:
   data: |
@@ -99,7 +99,7 @@ metadata:
     labels:
         omni.sidero.dev/machine: 6680f42c-8187-0cac-dc4c-4f836fe99873
     annotations:
-        description: add 1 TB sda disk
+        description: add 500 GB sda disk
         name: adddisk
 spec:
   data: |
@@ -128,7 +128,7 @@ metadata:
     labels:
         omni.sidero.dev/machine: 5aa03ceb-d97e-6b59-d293-9c1708fadaa8
     annotations:
-        description: add 1 TB sda disk
+        description: add 500 GB sda disk
         name: adddisk
 spec:
   data: |
@@ -157,7 +157,7 @@ metadata:
     labels:
         omni.sidero.dev/machine: 8ce140e0-700a-6760-eb28-274c903327ef
     annotations:
-        description: add 1 TB sda disk
+        description: add 500 GB sda disk
         name: adddisk
 spec:
   data: |
