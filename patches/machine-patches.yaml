@@ -12,7 +12,7 @@ metadata:
     labels:
         omni.sidero.dev/machine: 4c4c4544-0035-3810-8038-b4c04f444d33
     annotations:
-        description: add 500 GB sda disk (CT500MX500SSD1) to omni-talos-1
+        description: add 500 GB sda disk (CT500MX500SSD1) to omni-talos-1 with ext4
         name: storage-disk-231
 spec:
   data: |
@@ -30,6 +30,7 @@ spec:
           - device: /dev/disk/by-id/ata-CT500MX500SSD1_2007E28A9F01
             partitions:
               - mountpoint: /var/mnt/storage
+                format: ext4
 ---
 # This is a machine patch that adds a 500GB CT500MX500SSD1 disk to omni-talos-2 (192.168.0.232)
 # The patch is applied to the machine with ID: 4c4c4544-005a-5410-804e-b3c04f363733
@@ -41,7 +42,7 @@ metadata:
     labels:
         omni.sidero.dev/machine: 4c4c4544-005a-5410-804e-b3c04f363733
     annotations:
-        description: add 500 GB sda disk (CT500MX500SSD1) to omni-talos-2
+        description: add 500 GB sda disk (CT500MX500SSD1) to omni-talos-2 with ext4
         name: storage-disk-232
 spec:
   data: |
@@ -59,6 +60,7 @@ spec:
           - device: /dev/disk/by-id/ata-CT500MX500SSD1_2007E28A9BBF
             partitions:
               - mountpoint: /var/mnt/storage
+                format: ext4
 ---
 # This is a machine patch that adds a 500GB CT500MX500SSD1 disk to omni-talos-3 (192.168.0.233)
 # The patch is applied to the machine with ID: 4c4c4544-0033-3810-8038-c8c04f444d33
@@ -70,7 +72,7 @@ metadata:
     labels:
         omni.sidero.dev/machine: 4c4c4544-0033-3810-8038-c8c04f444d33
     annotations:
-        description: add 500 GB sda disk (CT500MX500SSD1) to omni-talos-3
+        description: add 500 GB sda disk (CT500MX500SSD1) to omni-talos-3 with ext4
         name: storage-disk-233
 spec:
   data: |
@@ -88,6 +90,7 @@ spec:
           - device: /dev/disk/by-id/ata-CT500MX500SSD1_2007E28A9824
             partitions:
               - mountpoint: /var/mnt/storage
+                format: ext4
 ---
 # This is a machine patch that adds a 500GB CT500MX500SSD1 disk to omni-talos-4 (192.168.0.234)
 # The patch is applied to the machine with ID: 4c4c4544-005a-5310-8050-b3c04f363733
@@ -99,7 +102,7 @@ metadata:
     labels:
         omni.sidero.dev/machine: 4c4c4544-005a-5310-8050-b3c04f363733
     annotations:
-        description: add 500 GB sda disk (CT500MX500SSD1) to omni-talos-4
+        description: add 500 GB sda disk (CT500MX500SSD1) to omni-talos-4 with ext4
         name: storage-disk-234
 spec:
   data: |
@@ -117,6 +120,7 @@ spec:
           - device: /dev/disk/by-id/ata-CT500MX500SSD1_2007E28A9E77
             partitions:
               - mountpoint: /var/mnt/storage
+                format: ext4
 ---
 # This is a machine patch that adds a 500GB CT500MX500SSD1 disk to omni-talos-5 (192.168.0.235)
 # The patch is applied to the machine with ID: 4c4c4544-0056-3510-8033-b2c04f335133
@@ -128,7 +132,7 @@ metadata:
     labels:
         omni.sidero.dev/machine: 4c4c4544-0056-3510-8033-b2c04f335133
     annotations:
-        description: add 500 GB sda disk (CT500MX500SSD1) to omni-talos-5
+        description: add 500 GB sda disk (CT500MX500SSD1) to omni-talos-5 with ext4
         name: storage-disk-235
 spec:
   data: |
@@ -146,3 +150,4 @@ spec:
           - device: /dev/disk/by-id/ata-CT500MX500SSD1_2007E28A9F2F
             partitions:
               - mountpoint: /var/mnt/storage
+                format: ext4
