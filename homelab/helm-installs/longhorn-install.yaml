@@ -1,0 +1,15 @@
+# copy / paste 
+
+
+helm install longhorn longhorn/longhorn \
+  --namespace longhorn-system \
+  --create-namespace \
+  --set defaultSettings.defaultDataPath=/var/mnt/storage \
+  --set defaultSettings.disableRevisionCounter=true \
+  --set defaultSettings.kubernetesClusterAutoscalerEnabled=false \
+  --set enablePSP=false \
+  --set defaultSettings.createDefaultDiskLabeledNodes=true \
+  --set namespaceOverride=longhorn-system \
+  --set-string 'namespaceLabels.pod-security\.kubernetes\.io/enforce=privileged' \
+  --set-string 'namespaceLabels.pod-security\.kubernetes\.io/audit=privileged' \
+  --set-string 'namespaceLabels.pod-security\.kubernetes\.io/warn=privileged'
