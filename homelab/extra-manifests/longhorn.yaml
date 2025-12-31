@@ -4962,6 +4962,8 @@ spec:
         app.kubernetes.io/version: v1.10.1
         app: longhorn-manager
     spec:
+      hostNetwork: true # added to fix DNS resolution issues on some clusters
+      dnsPolicy: ClusterFirstWithHostNet # added to fix DNS resolution issues on some clusters
       containers:
       - name: longhorn-manager
         image: longhornio/longhorn-manager:v1.10.1
