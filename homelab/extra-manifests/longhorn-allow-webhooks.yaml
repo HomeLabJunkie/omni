@@ -1,0 +1,19 @@
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-longhorn-webhooks
+  namespace: longhorn-system
+spec:
+  endpointSelector: {}
+  egress:
+  - toEndpoints:
+    - {}
+  - toServices:
+    - k8sService:
+        namespace: longhorn-system
+  - toFQDNs:
+    - matchPattern: "*"
+  ingress:
+  - fromEndpoints:
+    - {}
