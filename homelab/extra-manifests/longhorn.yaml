@@ -81,6 +81,7 @@ data:
   default-setting.yaml: |-
     priority-class: longhorn-critical
     disable-revision-counter: true
+    default-data-path: /var/mnt/storage
 ---
 # Source: longhorn/templates/storageclass.yaml
 apiVersion: v1
