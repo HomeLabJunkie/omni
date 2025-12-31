@@ -1,25 +1,31 @@
 metadata:
     namespace: default
     type: ConfigPatches.omni.sidero.dev
-    id: 500-761561d3-6ea2-4dc0-939a-c743cde0a345
-    version: 2
+    id: 500-231-storage-disk
+    version: 3
     owner:
     phase: running
-    # created: 2025-03-09T19:10:48Z
-    # updated: 2025-03-12T23:00:15Z
+    created: 2025-12-31T02:26:53Z
+    updated: 2025-12-31T16:49:48Z
     labels:
-        omni.sidero.dev/machine: 5b7675ab-9294-23a3-0f18-742476129205
+        omni.sidero.dev/machine: 4c4c4544-0035-3810-8038-b4c04f444d33
     annotations:
-        description: Add VIP IP to Control Planes
-        name: add-vip
+        description: add 500 GB sda disk (CT500MX500SSD1) to omni-talos-1
+        name: storage-disk-231
 spec:
-    data: |-
+    data: |
         machine:
-          network:
-            interfaces:
-              - deviceSelector:
-                  physical: true # should select any hardware network device, if you have just one, it will be selected
-                dhcp: true
-                vip:
-                  ip: 192.168.0.230
+          kubelet:
+            extraMounts:
+              - destination: /var/mnt/storage
+                type: bind
+                source: /var/mnt/storage
+                options:
+                  - bind
+                  - rshared
+                  - rw
+          disks:
+              - device: /dev/disk/by-id/ata-CT500MX500SSD1_2007E28A9F01
+                partitions:
+                  - mountpoint: /var/mnt/storage
     compresseddata: []
