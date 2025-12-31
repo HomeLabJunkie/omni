@@ -62,8 +62,7 @@ patches:
           - https://raw.githubusercontent.com/HomeLabJunkie/omni/refs/heads/main/homelab/extra-manifests/ip-pool.yml
           - https://raw.githubusercontent.com/HomeLabJunkie/omni/refs/heads/main/homelab/extra-manifests/stand-alone-install.yaml
           - https://raw.githubusercontent.com/HomeLabJunkie/omni/refs/heads/main/homelab/extra-manifests/components.yaml
-          - https://raw.githubusercontent.com/HomeLabJunkie/omni/refs/heads/main/homelab/extra-manifests/longhorn-allow-webhooks.yaml
-          - https://raw.githubusercontent.com/HomeLabJunkie/omni/refs/heads/main/homelab/extra-manifests/longhorn.yaml
+          # - https://raw.githubusercontent.com/HomeLabJunkie/omni/refs/heads/main/homelab/extra-manifests/longhorn.yaml
   - idOverride: 205-cluster-k8s-talos-cluster-metric-server
     annotations:
       name: metric-server
