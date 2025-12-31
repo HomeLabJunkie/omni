@@ -31,7 +31,7 @@ spec:
   priority: 0
   restartPolicy: Never
   serviceAccountName: default
-  nodeName: k8s-node-3 # Change this to the node you want to run the pod on
+  nodeName: omni-talos-3 # Change this to the node you want to run the pod on
   tolerations:
   - operator: Exists
   volumes:
