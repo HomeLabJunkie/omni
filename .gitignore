@@ -34,4 +34,4 @@ discovery-service
 s3-backup-creds.yaml
 /tmp/*
 *.log
-outputpatch.yaml
+/patches/outputpatch.yaml
