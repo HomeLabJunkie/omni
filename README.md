@@ -35,3 +35,5 @@ omnictl cluster template sync --file k8s-cluster-template.yaml
 
 ** - Add instructions for retreiving an Administrative Kubeconfig
  - https://docs.siderolabs.com/omni/omni-cluster-setup/create-a-kubeconfig-for-a-service-account 
+
+** - Link to Full Deployment Guide https://github.com/HomeLabJunkie/omni/TALOS_CLUSTER_DEPLOYMENT_GUIDE.md 
