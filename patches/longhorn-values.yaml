@@ -13,11 +13,13 @@ namespaceLabels:
 
 service:
   ui:
-    annotations:
-      omni-kube-service-exposer.sidero.dev/port: "80"
-      omni-kube-service-exposer.sidero.dev/label: Longhorn
-      omni-kube-service-exposer.sidero.dev/protocol: http
-      omni-kube-service-exposer.sidero.dev/icon: PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI0IDQ4QzM3LjI1NDggNDggNDggMzcuMjU0OCA0OCAyNEM0OCAxMC43NDUyIDM3LjI1NDggMCAyNCAwQzEwLjc0NTIgMCAwIDEwLjc0NTIgMCAyNEMwIDM3LjI1NDggMTAuNzQ1MiA0OCAyNCA0OFoiIGZpbGw9IiNGRjYwMDAiLz4KPHBhdGggZD0iTTM2IDE4SDEyQzEwLjg5NTQgMTggMTAgMTguODk1NCAxMCAyMFYzMkMxMCAzMy4xMDQ2IDEwLjg5NTQgMzQgMTIgMzRIMzZDMzcuMTA0NiAzNCAzOCAzMy4xMDQ2IDM4IDMyVjIwQzM4IDE4Ljg5NTQgMzcuMTA0NiAxOCAzNiAxOFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=
+    annotations: {}
+    # To enable longhorn or other apps in the side menu of Omni , uncomment the annotations below
+    # annotations:
+    #   omni-kube-service-exposer.sidero.dev/port: "80"
+    #   omni-kube-service-exposer.sidero.dev/label: Longhorn
+    #   omni-kube-service-exposer.sidero.dev/protocol: http
+    #   omni-kube-service-exposer.sidero.dev/icon: PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI0IDQ4QzM3LjI1NDggNDggNDggMzcuMjU0OCA0OCAyNEM0OCAxMC43NDUyIDM3LjI1NDggMCAyNCAwQzEwLjc0NTIgMCAwIDEwLjc0NTIgMCAyNEMwIDM3LjI1NDggMTAuNzQ1MiA0OCAyNCA0OFoiIGZpbGw9IiNGRjYwMDAiLz4KPHBhdGggZD0iTTM2IDE4SDEyQzEwLjg5NTQgMTggMTAgMTguODk1NCAxMCAyMFYzMkMxMCAzMy4xMDQ2IDEwLjg5NTQgMzQgMTIgMzRIMzZDMzcuMTA0NiAzNCAzOCAzMy4xMDQ2IDM4IDMyVjIwQzM4IDE4Ljg5NTQgMzcuMTA0NiAxOCAzNiAxOFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=
 
 # CRITICAL: Cilium webhook compatibility fix
 longhornAdmission:
