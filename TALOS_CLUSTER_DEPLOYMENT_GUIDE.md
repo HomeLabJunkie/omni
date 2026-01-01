@@ -5,7 +5,7 @@ This guide provides the complete, tested steps to deploy a 5-node Talos Linux cl
 - Cilium CNI with KubeSpan
 - Longhorn distributed storage on dedicated 500GB disks
 - Cloudflare Tunnel for external application access
-- Domain: anything4cash.com
+- Domain: <yourdomain.com>
 
 ## Prerequisites
 - 5 physical nodes with Dell hardware
@@ -14,7 +14,7 @@ This guide provides the complete, tested steps to deploy a 5-node Talos Linux cl
 - kubectl installed
 - helm installed
 - Access to GitHub for storing configurations
-- Cloudflare account with anything4cash.com domain
+- Cloudflare account with <yourdomain.com> domain
 
 ## Step 1: Deploy the Cluster
 
@@ -190,11 +190,12 @@ All nodes should show `READY: True` and `SCHEDULABLE: True`.
 - S3 URL: `s3://longhorn@us-east-1/`
 - Secret Name: `longhorn-minio-credentials`
 
-Apply your S3 backup credentials from your GitHub repository:
+Apply your S3 backup credentials from your LOCAL GitHub repository:
 
 ```bash
 # Apply the S3 credentials secret
-# File location: helm-installs/s3-backup-creds.yaml in your GitHub repo
+# File location: helm-installs/s3-backup-creds.yaml in your LOCAL GitHub repo 
+# (.gitignore does not upload this file to the public repo)
 kubectl apply -f s3-backup-creds.yaml
 ```
 
@@ -240,7 +241,7 @@ cloudflared tunnel login
 # This will:
 # 1. Open your browser
 # 2. Ask you to select your Cloudflare account
-# 3. Choose the anything4cash.com domain
+# 3. Choose the <yourdomain.com> domain
 # 4. Download cert.pem to ~/.cloudflared/
 ```
 
@@ -251,7 +252,7 @@ cloudflared tunnel login
 cloudflared tunnel create k8s-talos-tunnel
 
 # This will output:
-# - Tunnel ID (e.g., 9cd69028-40bb-4fc4-8055-9fe3911200f3)
+# - Tunnel ID (e.g., <YOUR_TUNNEL_ID>)
 # - Credentials file location: ~/.cloudflared/<TUNNEL_ID>.json
 
 # Display the credentials (you'll need these for the Kubernetes secret)
@@ -262,9 +263,11 @@ cat ~/.cloudflared/<TUNNEL_ID>.json
 
 ### 4.4 Create Cloudflare Tunnel Secret
 
-**File: `cloudflare-tunnel-secret.yaml`** (encrypt with SOPS)
+**Note**: Cloudflare Tunnel configuration files are stored in your LOCAL GitHub repository and are not published to the public repo.
 
-Replace the values with your tunnel credentials from the previous step:
+**File location**: `omni/homelab/secrets/cloudflare-tunnel-secret.yaml` (gitignored via `*/secrets/*`)
+
+Replace the values with your tunnel credentials from step 4.3:
 
 ```yaml
 apiVersion: v1
@@ -278,15 +281,19 @@ stringData:
     {
       "AccountTag": "YOUR_ACCOUNT_TAG",
       "TunnelSecret": "YOUR_TUNNEL_SECRET",
-      "TunnelID": "YOUR_TUNNEL_ID"
+      "TunnelID": "<YOUR_TUNNEL_ID>"
     }
 ```
 
-### 4.5 Create Cloudflare Tunnel ConfigMap
+### 4.5 Create Cloudflare Tunnel Deployment
 
-**File: `cloudflare-tunnel-config.yaml`**
+**File location**: `omni/homelab/secrets/cloudflared-deployment.yaml` (gitignored via `*/secrets/*`)
 
-**Note**: This ConfigMap is only used if managing routes via ConfigMap instead of Cloudflare Dashboard. When managing routes through the Cloudflare Dashboard (recommended), this config is simplified.
+**Important**: The deployment includes DNS configuration to properly resolve internal Kubernetes service names.
+
+**Note**: Routes are managed through the Cloudflare Dashboard, not via ConfigMap. This deployment uses a minimal config.
+
+Update the ConfigMap to use minimal configuration:
 
 ```yaml
 apiVersion: v1
@@ -296,17 +303,13 @@ metadata:
   namespace: cloudflare
 data:
   config.yaml: |
-    tunnel: YOUR_TUNNEL_ID
+    tunnel: <YOUR_TUNNEL_ID>
     credentials-file: /etc/cloudflared/creds/credentials.json
     metrics: 0.0.0.0:2000
     no-autoupdate: true
 ```
 
-### 4.6 Create Cloudflare Tunnel Deployment
-
-**File: `cloudflared-deployment.yaml`**
-
-**Important**: The deployment includes DNS configuration to properly resolve internal Kubernetes service names.
+Create the deployment:
 
 ```yaml
 apiVersion: v1
@@ -366,19 +369,31 @@ spec:
           secretName: cloudflared-secret
 ```
 
-### 4.7 Deploy Cloudflare Tunnel
+### 4.6 Deploy Cloudflare Tunnel
 
 ```bash
 # Create namespace
 kubectl create namespace cloudflare
 
+# Apply the minimal config ConfigMap
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-config
+  namespace: cloudflare
+data:
+  config.yaml: |
+    tunnel: <YOUR_TUNNEL_ID>
+    credentials-file: /etc/cloudflared/creds/credentials.json
+    metrics: 0.0.0.0:2000
+    no-autoupdate: true
+EOF
+
 # Apply secret (replace with your credentials first)
 kubectl apply -f cloudflare-tunnel-secret.yaml
-# OR if using SOPS:
-# sops -d cloudflare-tunnel-secret.yaml | kubectl apply -f -
 
-# Apply config and deployment
-kubectl apply -f cloudflare-tunnel-config.yaml
+# Apply deployment
 kubectl apply -f cloudflared-deployment.yaml
 
 # Verify deployment
@@ -394,35 +409,58 @@ INF Registered tunnel connection connIndex=0 connection=... location=... protoco
 INF Registered tunnel connection connIndex=1 connection=... location=... protocol=quic
 ```
 
-### 4.8 Configure Routes in Cloudflare Dashboard
+### 4.7 Configure Public Hostname Routes in Cloudflare Dashboard
 
-**Option A: Via Cloudflare Dashboard (Recommended)**
+Routes are managed through the Cloudflare Zero Trust Dashboard, which provides dynamic configuration without needing to redeploy pods.
 
-1. Go to **Zero Trust** → **Networks** → **Tunnels**
-2. Click on your `k8s-talos-tunnel`
-3. Go to **Public Hostname** tab
-4. Click **Add a public hostname**
-5. Configure:
-   - **Subdomain**: `longhorn`
-   - **Domain**: `anything4cash.com`
-   - **Service**:
-     - Type: `HTTP`
-     - URL: `http://longhorn-frontend.longhorn-system:80`
+**Step-by-step instructions:**
+
+1. **Access Cloudflare Zero Trust Dashboard**
+   - Log into your Cloudflare account
+   - Go to **Zero Trust** → **Networks** → **Tunnels**
+   - Click on your tunnel: `k8s-talos-tunnel`
+
+2. **Add Public Hostname for Longhorn**
+   - Click the **Public Hostname** tab
+   - Click **Add a public hostname**
+   - Configure the route:
+     - **Subdomain**: `longhorn`
+     - **Domain**: Select `<yourdomain.com>` from dropdown
+     - **Path**: Leave empty
+     - **Service**:
+       - **Type**: `HTTP`
+       - **URL**: `longhorn-frontend.longhorn-system:80`
    
-   **Important**: Use the short service name format `service-name.namespace:port`, NOT the full FQDN. The DNS search domains will complete it properly.
+   **Important**: Use the short service name format `service-name.namespace:port` (NOT the full FQDN `*.svc.cluster.local`). The DNS search domains in the cloudflared deployment will complete it properly.
 
-6. Click **Save hostname**
+3. **Save the Route**
+   - Click **Save hostname**
+   - The tunnel will automatically update with the new route (check logs to confirm)
 
-**Option B: Via cloudflared CLI**
+4. **Verify the Route**
+   ```bash
+   # Watch the cloudflared logs to see the configuration update
+   kubectl logs -n cloudflare -l app=cloudflared --tail=20
+   
+   # You should see:
+   # INF Updated to new configuration config="{\"ingress\":[{\"hostname\":\"longhorn.<yourdomain.com>\"...
+   ```
 
-```bash
-# Route the subdomain to your tunnel
-cloudflared tunnel route dns k8s-talos-tunnel longhorn.anything4cash.com
-```
+5. **DNS Configuration**
+   - Cloudflare automatically creates a CNAME record when you add a public hostname
+   - Verify in **DNS** → **Records**:
+     ```
+     longhorn CNAME <YOUR_TUNNEL_ID>.cfargotunnel.com (Proxied)
+     ```
 
-Then configure the route in the Cloudflare Dashboard as described above.
+6. **Add Additional Services**
+   - Repeat steps 2-5 for each service you want to expose
+   - Examples:
+     - **Service**: `app-service.app-namespace:8080`
+     - **Subdomain**: `app`
+     - **Domain**: `<yourdomain.com>`
 
-### 4.9 Configure Cloudflare Security Settings
+### 4.8 Configure Cloudflare Security Settings
 
 For the tunnel to work properly, configure these settings in your Cloudflare dashboard:
 
@@ -442,47 +480,509 @@ For the tunnel to work properly, configure these settings in your Cloudflare das
      longhorn CNAME YOUR_TUNNEL_ID.cfargotunnel.com (Proxied)
      ```
 
-### 4.10 Verify Access
+### 4.9 Verify Access
 
 ```bash
 # Test the tunnel
-curl -I https://longhorn.anything4cash.com
+curl -I https://longhorn.<yourdomain.com>
 
 # You should see HTTP/2 200 OK
 ```
 
 Access the Longhorn UI in your browser:
 ```
-https://longhorn.anything4cash.com
+https://longhorn.<yourdomain.com>
 ```
 
-### 4.11 Troubleshooting
+## Step 5: Secure Applications with Basic Authentication
 
-If you get a 403 Forbidden:
-- Check Cloudflare security settings (WAF, Bot Fight Mode)
-- Verify SSL/TLS mode is set to "Full" or "Flexible"
-- Check for any Cloudflare Access policies blocking the subdomain
+### 5.1 Overview
 
-If you see connection timeouts in cloudflared logs:
-- Verify the service name format is correct (short name, not FQDN)
-- Check that the service exists: `kubectl get svc -n longhorn-system longhorn-frontend`
-- Verify DNS resolution in cloudflared pods works correctly
+This step adds an nginx reverse proxy with basic authentication to protect Longhorn and other applications. The traffic flow will be:
 
-Check cloudflared logs:
+```
+User → Cloudflare Tunnel → nginx (with auth) → Application
+```
+
+### 5.2 Install htpasswd Tool
+
+On your Omni development workstation:
+
 ```bash
-kubectl logs -n cloudflare -l app=cloudflared --tail=50
+# On macOS (if not already installed)
+brew install httpd
+
+# Verify installation
+htpasswd -h
 ```
 
-You should see:
-```
-INF Registered tunnel connection ...
-INF Updated to new configuration ...
+### 5.3 Generate Basic Auth Credentials
+
+```bash
+# Create a password file with a user
+# Replace 'admin' with your desired username
+htpasswd -c auth admin
+
+# You'll be prompted to enter and confirm a password
+# This creates a file called 'auth' with the encrypted password
 ```
 
-And NOT see:
-```
-ERR Unable to reach the origin service ...
-ERR dial tcp 104.21.x.x:xxxx: i/o timeout
+### 5.4 Create Kubernetes Secret for Basic Auth
+
+```bash
+# Create namespace for nginx auth proxy
+kubectl create namespace auth-proxy
+
+# Create secret from the auth file
+kubectl create secret generic basic-auth \
+  --from-file=auth \
+  -n auth-proxy
+
+# Verify the secret was created
+kubectl get secret basic-auth -n auth-proxy
 ```
 
+### 5.5 Deploy nginx Auth Proxy
+
+Create the nginx deployment with ConfigMap:
+
+**File: `nginx-auth-proxy.yaml`**
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: auth-proxy
+data:
+  nginx.conf: |
+    events {
+      worker_connections 1024;
+    }
+    
+    http {
+      server {
+        listen 80;
+        server_name _;
+        
+        # Basic auth configuration
+        auth_basic "Restricted Access";
+        auth_basic_user_file /etc/nginx/auth;
+        
+        # Proxy to Longhorn
+        location / {
+          proxy_pass http://longhorn-frontend.longhorn-system:80;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+        }
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-auth-proxy-longhorn
+  namespace: auth-proxy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-auth-proxy-longhorn
+  template:
+    metadata:
+      labels:
+        app: nginx-auth-proxy-longhorn
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: auth
+          mountPath: /etc/nginx/auth
+          subPath: auth
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config
+      - name: auth
+        secret:
+          secretName: basic-auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-auth-proxy-longhorn
+  namespace: auth-proxy
+spec:
+  selector:
+    app: nginx-auth-proxy-longhorn
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP
+```
+
+Deploy the nginx proxy:
+
+```bash
+# Apply the deployment
+kubectl apply -f nginx-auth-proxy.yaml
+
+# Verify pods are running
+kubectl get pods -n auth-proxy
+
+# Check service
+kubectl get svc -n auth-proxy
+```
+
+### 5.6 Update Cloudflare Tunnel Route
+
+Update the Longhorn route in Cloudflare Dashboard to point to the nginx proxy instead of Longhorn directly:
+
+1. Go to **Zero Trust** → **Networks** → **Tunnels**
+2. Click on your tunnel: `k8s-talos-tunnel`
+3. Go to **Public Hostname** tab
+4. Edit the `longhorn.<yourdomain.com>` route
+5. Update the **Service URL** to:
+   ```
+   nginx-auth-proxy-longhorn.auth-proxy:80
+   ```
+6. Save the changes
+
+### 5.7 Test Authentication
+
+```bash
+# Test without credentials (should fail)
+curl -I https://longhorn.<yourdomain.com>
+# Expected: HTTP/2 401 Unauthorized
+
+# Test with credentials (should succeed)
+curl -I -u admin:yourpassword https://longhorn.<yourdomain.com>
+# Expected: HTTP/2 200 OK
+```
+
+Access in browser:
+- Navigate to `https://longhorn.<yourdomain.com>`
+- You'll be prompted for username and password
+- Enter the credentials you created in step 5.3
+
+### 5.8 Add Authentication to Additional Applications
+
+To protect additional applications, create separate nginx deployments for each:
+
+**Template for additional apps:**
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config-<app-name>
+  namespace: auth-proxy
+data:
+  nginx.conf: |
+    events {
+      worker_connections 1024;
+    }
+    
+    http {
+      server {
+        listen 80;
+        server_name _;
+        
+        auth_basic "Restricted Access";
+        auth_basic_user_file /etc/nginx/auth;
+        
+        location / {
+          proxy_pass http://<service-name>.<namespace>:<port>;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+        }
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-auth-proxy-<app-name>
+  namespace: auth-proxy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-auth-proxy-<app-name>
+  template:
+    metadata:
+      labels:
+        app: nginx-auth-proxy-<app-name>
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: auth
+          mountPath: /etc/nginx/auth
+          subPath: auth
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config-<app-name>
+      - name: auth
+        secret:
+          secretName: basic-auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-auth-proxy-<app-name>
+  namespace: auth-proxy
+spec:
+  selector:
+    app: nginx-auth-proxy-<app-name>
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP
+```
+
+Then update Cloudflare Tunnel to route to `nginx-auth-proxy-<app-name>.auth-proxy:80`
+
+### 5.9 Managing Users
+
+To add or update users:
+
+```bash
+# Add a new user to existing auth file
+htpasswd auth newuser
+
+# Update the secret
+kubectl create secret generic basic-auth \
+  --from-file=auth \
+  -n auth-proxy \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+# Restart nginx pods to pick up the new credentials
+kubectl rollout restart deployment -n auth-proxy
+```
+
+To remove a user:
+
+```bash
+# Remove user from auth file
+htpasswd -D auth username
+
+# Update the secret
+kubectl create secret generic basic-auth \
+  --from-file=auth \
+  -n auth-proxy \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+# Restart nginx pods
+kubectl rollout restart deployment -n auth-proxy
+```
+
+## Step 5: Secure Applications with Basic Authentication
+
+### 5.1 Overview
+
+This step adds nginx-based basic authentication to protect web applications exposed through Cloudflare Tunnel. This provides a simple username/password login before accessing services like Longhorn.
+
+### 5.2 Install Apache Utils (for htpasswd)
+
+On your development workstation:
+
+```bash
+# Install apache2-utils for htpasswd command
+# On macOS with Homebrew:
+brew install httpd
+
+# On Ubuntu/Debian:
+# sudo apt-get install apache2-utils
+```
+
+### 5.3 Create htpasswd Credentials
+
+```bash
+# Create htpasswd file with username
+htpasswd -c auth <username>
+
+# You'll be prompted to enter a password
+# This creates a file named 'auth' with encrypted credentials
+
+# View the generated hash
+cat auth
+```
+
+### 5.4 Create Basic Auth Secret
+
+Create a Kubernetes secret with the htpasswd credentials:
+
+```bash
+# Create the secret in the longhorn-system namespace
+kubectl create secret generic basic-auth \
+  --from-file=auth \
+  -n longhorn-system
+
+# Verify the secret
+kubectl get secret basic-auth -n longhorn-system
+```
+
+### 5.5 Deploy nginx Auth Proxy
+
+Create the nginx deployment that will proxy requests to Longhorn with basic auth:
+
+**File location**: `omni/homelab/infrastructure/nginx-auth-proxy-longhorn.yaml`
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-auth-proxy
+  namespace: longhorn-system
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-auth-proxy
+  template:
+    metadata:
+      labels:
+        app: nginx-auth-proxy
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: auth
+          mountPath: /etc/nginx/auth
+          readOnly: true
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-auth-config
+      - name: auth
+        secret:
+          secretName: basic-auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-auth-proxy
+  namespace: longhorn-system
+spec:
+  selector:
+    app: nginx-auth-proxy
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-auth-config
+  namespace: longhorn-system
+data:
+  nginx.conf: |
+    events {
+      worker_connections 1024;
+    }
+    
+    http {
+      server {
+        listen 80;
+        
+        location / {
+          auth_basic "Restricted Access";
+          auth_basic_user_file /etc/nginx/auth;
+          
+          proxy_pass http://longhorn-frontend:80;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+        }
+      }
+    }
+```
+
+Apply the configuration:
+
+```bash
+kubectl apply -f nginx-auth-proxy-longhorn.yaml
+
+# Verify the deployment
+kubectl get pods -n longhorn-system -l app=nginx-auth-proxy
+kubectl get svc nginx-auth-proxy -n longhorn-system
+```
+
+### 5.6 Update Cloudflare Tunnel Route
+
+Update the Cloudflare Tunnel route to point to the nginx auth proxy instead of directly to Longhorn:
+
+1. Go to **Zero Trust** → **Networks** → **Tunnels**
+2. Click on `k8s-talos-tunnel`
+3. Go to **Public Hostname** tab
+4. Edit the `longhorn.<yourdomain.com>` route
+5. Update the **Service URL** to: `nginx-auth-proxy.longhorn-system:80`
+6. Click **Save hostname**
+
+### 5.7 Verify Authentication
+
+```bash
+# Test without credentials (should fail with 401)
+curl -I https://longhorn.<yourdomain.com>
+
+# Should return: HTTP/2 401 Unauthorized
+
+# Test with credentials (should succeed)
+curl -u <username>:<password> -I https://longhorn.<yourdomain.com>
+
+# Should return: HTTP/2 200 OK
+```
+
+Access in browser:
+- Navigate to `https://longhorn.<yourdomain.com>`
+- You'll be prompted for username and password
+- Enter the credentials you created in step 5.3
+- You should now see the Longhorn UI
+
+### 5.8 Reusable Pattern for Other Applications
+
+To add basic auth to other applications, follow this pattern:
+
+1. **Create htpasswd secret** in the application's namespace
+2. **Deploy nginx auth proxy** with the ConfigMap pointing to your application's service
+3. **Expose the nginx proxy** instead of the application directly
+4. **Update Cloudflare route** to point to `nginx-auth-proxy.<namespace>:80`
+
+Example for a different app:
+
+```yaml
+# In the ConfigMap nginx.conf, change the proxy_pass line:
+proxy_pass http://<your-app-service>:<port>;
+```
+
+**Security Notes**:
+- Basic auth credentials are transmitted securely over HTTPS via Cloudflare Tunnel
+- For production use, consider implementing OAuth2/OIDC with Authentik or similar
+- Rotate passwords periodically by regenerating the htpasswd file and updating the secret
 
