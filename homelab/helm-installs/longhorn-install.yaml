@@ -1,19 +1,30 @@
 # copy / paste 
 
+# helm install longhorn longhorn/longhorn \
+#   --namespace longhorn-system \
+#   --create-namespace \
+#   --set defaultSettings.defaultDataPath=/var/mnt/storage \
+#   --set defaultSettings.disableRevisionCounter=true \
+#   --set defaultSettings.kubernetesClusterAutoscalerEnabled=false \
+#   --set enablePSP=false \
+#   --set defaultSettings.createDefaultDiskLabeledNodes=true \
+#   --set-string 'namespaceLabels.pod-security\.kubernetes\.io/enforce=privileged' \
+#   --set-string 'namespaceLabels.pod-security\.kubernetes\.io/audit=privileged' \
+#   --set-string 'namespaceLabels.pod-security\.kubernetes\.io/warn=privileged' \
+#   --set-string 'service.ui.annotations.omni-kube-service-exposer\.sidero\.dev/port=80' \
+#   --set-string 'service.ui.annotations.omni-kube-service-exposer\.sidero\.dev/label=Longhorn' \
+#   --set-string 'service.ui.annotations.omni-kube-service-exposer\.sidero\.dev/protocol=http' \
+#   --set-string 'service.ui.annotations.omni-kube-service-exposer\.sidero\.dev/icon=PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI0IDQ4QzM3LjI1NDggNDggNDggMzcuMjU0OCA0OCAyNEM0OCAxMC43NDUyIDM3LjI1NDggMCAyNCAwQzEwLjc0NTIgMCAwIDEwLjc0NTIgMCAyNEMwIDM3LjI1NDggMTAuNzQ1MiA0OCAyNCA0OFoiIGZpbGw9IiNGRjYwMDAiLz4KPHBhdGggZD0iTTM2IDE4SDEyQzEwLjg5NTQgMTggMTAgMTguODk1NCAxMCAyMFYzMkMxMCAzMy4xMDQ2IDEwLjg5NTQgMzQgMTIgMzRIMzZDMzcuMTA0NiAzNCAzOCAzMy4xMDQ2IDM4IDMyVjIwQzM4IDE4Ljg5NTQgMzcuMTA0NiAxOCAzNiAxOFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=' \
+#   --set-json 'longhornManager.volumeMounts=[{"name":"longhorn-default-disk","mountPath":"/var/mnt/storage","mountPropagation":"Bidirectional"}]' \
+#   --set-json 'longhornManager.volumes=[{"name":"longhorn-default-disk","hostPath":{"path":"/var/mnt/storage","type":"DirectoryOrCreate"}}]'
+
+
+# Add Longhorn repository
+helm repo add longhorn https://charts.longhorn.io
+helm repo update
+
+# Install Longhorn
 helm install longhorn longhorn/longhorn \
   --namespace longhorn-system \
   --create-namespace \
-  --set defaultSettings.defaultDataPath=/var/mnt/storage \
-  --set defaultSettings.disableRevisionCounter=true \
-  --set defaultSettings.kubernetesClusterAutoscalerEnabled=false \
-  --set enablePSP=false \
-  --set defaultSettings.createDefaultDiskLabeledNodes=true \
-  --set-string 'namespaceLabels.pod-security\.kubernetes\.io/enforce=privileged' \
-  --set-string 'namespaceLabels.pod-security\.kubernetes\.io/audit=privileged' \
-  --set-string 'namespaceLabels.pod-security\.kubernetes\.io/warn=privileged' \
-  --set-string 'service.ui.annotations.omni-kube-service-exposer\.sidero\.dev/port=80' \
-  --set-string 'service.ui.annotations.omni-kube-service-exposer\.sidero\.dev/label=Longhorn' \
-  --set-string 'service.ui.annotations.omni-kube-service-exposer\.sidero\.dev/protocol=http' \
-  --set-string 'service.ui.annotations.omni-kube-service-exposer\.sidero\.dev/icon=PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI0IDQ4QzM3LjI1NDggNDggNDggMzcuMjU0OCA0OCAyNEM0OCAxMC43NDUyIDM3LjI1NDggMCAyNCAwQzEwLjc0NTIgMCAwIDEwLjc0NTIgMCAyNEMwIDM3LjI1NDggMTAuNzQ1MiA0OCAyNCA0OFoiIGZpbGw9IiNGRjYwMDAiLz4KPHBhdGggZD0iTTM2IDE4SDEyQzEwLjg5NTQgMTggMTAgMTguODk1NCAxMCAyMFYzMkMxMCAzMy4xMDQ2IDEwLjg5NTQgMzQgMTIgMzRIMzZDMzcuMTA0NiAzNCAzOCAzMy4xMDQ2IDM4IDMyVjIwQzM4IDE4Ljg5NTQgMzcuMTA0NiAxOCAzNiAxOFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=' \
-  --set-json 'longhornManager.volumeMounts=[{"name":"longhorn-default-disk","mountPath":"/var/mnt/storage","mountPropagation":"Bidirectional"}]' \
-  --set-json 'longhornManager.volumes=[{"name":"longhorn-default-disk","hostPath":{"path":"/var/mnt/storage","type":"DirectoryOrCreate"}}]'
+  -f ~/omni/homelab/helm-installs/longhorn-values.yaml
