@@ -506,11 +506,12 @@ User → Cloudflare Tunnel → nginx (with auth) → Application
 
 ### 5.2 Install htpasswd Tool
 
-On your Omni development workstation:
+On your Omni development workstation (Ubuntu):
 
 ```bash
-# On macOS (if not already installed)
-brew install httpd
+# Install apache2-utils which includes htpasswd
+sudo apt-get update
+sudo apt-get install -y apache2-utils
 
 # Verify installation
 htpasswd -h
@@ -530,30 +531,27 @@ htpasswd -c auth admin
 ### 5.4 Create Kubernetes Secret for Basic Auth
 
 ```bash
-# Create namespace for nginx auth proxy
-kubectl create namespace auth-proxy
-
-# Create secret from the auth file
+# Create secret in the longhorn-system namespace
 kubectl create secret generic basic-auth \
   --from-file=auth \
-  -n auth-proxy
+  -n longhorn-system
 
 # Verify the secret was created
-kubectl get secret basic-auth -n auth-proxy
+kubectl get secret basic-auth -n longhorn-system
 ```
 
-### 5.5 Deploy nginx Auth Proxy
+### 5.5 Deploy nginx Auth Proxy for Longhorn
 
 Create the nginx deployment with ConfigMap:
 
-**File: `nginx-auth-proxy.yaml`**
+**File: `nginx-auth-proxy-longhorn.yaml`**
 
 ```yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: nginx-config
-  namespace: auth-proxy
+  name: nginx-auth-config
+  namespace: longhorn-system
 data:
   nginx.conf: |
     events {
@@ -571,7 +569,7 @@ data:
         
         # Proxy to Longhorn
         location / {
-          proxy_pass http://longhorn-frontend.longhorn-system:80;
+          proxy_pass http://longhorn-frontend:80;
           proxy_set_header Host $host;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -583,17 +581,17 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx-auth-proxy-longhorn
-  namespace: auth-proxy
+  name: nginx-auth-proxy
+  namespace: longhorn-system
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: nginx-auth-proxy-longhorn
+      app: nginx-auth-proxy
   template:
     metadata:
       labels:
-        app: nginx-auth-proxy-longhorn
+        app: nginx-auth-proxy
     spec:
       containers:
       - name: nginx
@@ -610,7 +608,7 @@ spec:
       volumes:
       - name: nginx-config
         configMap:
-          name: nginx-config
+          name: nginx-auth-config
       - name: auth
         secret:
           secretName: basic-auth
@@ -618,11 +616,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-auth-proxy-longhorn
-  namespace: auth-proxy
+  name: nginx-auth-proxy
+  namespace: longhorn-system
 spec:
   selector:
-    app: nginx-auth-proxy-longhorn
+    app: nginx-auth-proxy
   ports:
   - port: 80
     targetPort: 80
@@ -633,13 +631,13 @@ Deploy the nginx proxy:
 
 ```bash
 # Apply the deployment
-kubectl apply -f nginx-auth-proxy.yaml
+kubectl apply -f nginx-auth-proxy-longhorn.yaml
 
 # Verify pods are running
-kubectl get pods -n auth-proxy
+kubectl get pods -n longhorn-system -l app=nginx-auth-proxy
 
 # Check service
-kubectl get svc -n auth-proxy
+kubectl get svc nginx-auth-proxy -n longhorn-system
 ```
 
 ### 5.6 Update Cloudflare Tunnel Route
@@ -650,16 +648,28 @@ Update the Longhorn route in Cloudflare Dashboard to point to the nginx proxy in
 2. Click on your tunnel: `k8s-talos-tunnel`
 3. Go to **Public Hostname** tab
 4. Edit the `longhorn.<yourdomain.com>` route
-5. Update the **Service URL** to:
-   ```
-   nginx-auth-proxy-longhorn.auth-proxy:80
-   ```
+5. Update the **Service** configuration:
+   - **Type**: `HTTP`
+   - **URL**: `nginx-auth-proxy.longhorn-system:80`
+   
+   **Important**: Use exactly `nginx-auth-proxy.longhorn-system:80` (no `http://` prefix)
+
 6. Save the changes
+
+7. Verify the configuration update in cloudflared logs:
+   ```bash
+   kubectl logs -n cloudflare -l app=cloudflared --tail=20
+   ```
+   
+   You should see:
+   ```
+   INF Updated to new configuration config="{\"ingress\":[{\"hostname\":\"longhorn.<yourdomain.com>\",\"originRequest\":{},\"service\":\"http://nginx-auth-proxy.longhorn-system:80\"}...
+   ```
 
 ### 5.7 Test Authentication
 
 ```bash
-# Test without credentials (should fail)
+# Test without credentials (should fail with 401)
 curl -I https://longhorn.<yourdomain.com>
 # Expected: HTTP/2 401 Unauthorized
 
@@ -675,16 +685,18 @@ Access in browser:
 
 ### 5.8 Add Authentication to Additional Applications
 
-To protect additional applications, create separate nginx deployments for each:
+To protect additional applications, you can create separate nginx deployments in their respective namespaces or create a dedicated `auth-proxy` namespace for all authentication proxies.
 
-**Template for additional apps:**
+**Example: Protecting an app in its own namespace**
+
+For an application in namespace `app-namespace` with service `app-service:8080`:
 
 ```yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: nginx-config-<app-name>
-  namespace: auth-proxy
+  name: nginx-auth-config-app
+  namespace: app-namespace
 data:
   nginx.conf: |
     events {
@@ -700,7 +712,7 @@ data:
         auth_basic_user_file /etc/nginx/auth;
         
         location / {
-          proxy_pass http://<service-name>.<namespace>:<port>;
+          proxy_pass http://app-service:8080;
           proxy_set_header Host $host;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -712,17 +724,17 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx-auth-proxy-<app-name>
-  namespace: auth-proxy
+  name: nginx-auth-proxy-app
+  namespace: app-namespace
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: nginx-auth-proxy-<app-name>
+      app: nginx-auth-proxy-app
   template:
     metadata:
       labels:
-        app: nginx-auth-proxy-<app-name>
+        app: nginx-auth-proxy-app
     spec:
       containers:
       - name: nginx
@@ -739,7 +751,7 @@ spec:
       volumes:
       - name: nginx-config
         configMap:
-          name: nginx-config-<app-name>
+          name: nginx-auth-config-app
       - name: auth
         secret:
           secretName: basic-auth
@@ -747,18 +759,27 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-auth-proxy-<app-name>
-  namespace: auth-proxy
+  name: nginx-auth-proxy-app
+  namespace: app-namespace
 spec:
   selector:
-    app: nginx-auth-proxy-<app-name>
+    app: nginx-auth-proxy-app
   ports:
   - port: 80
     targetPort: 80
   type: ClusterIP
 ```
 
-Then update Cloudflare Tunnel to route to `nginx-auth-proxy-<app-name>.auth-proxy:80`
+**Important**: You'll need to create the `basic-auth` secret in each namespace where you deploy an auth proxy:
+
+```bash
+# Create the secret in the app namespace
+kubectl create secret generic basic-auth \
+  --from-file=auth \
+  -n app-namespace
+```
+
+Then configure Cloudflare Tunnel to route to `nginx-auth-proxy-app.app-namespace:80`
 
 ### 5.9 Managing Users
 
@@ -768,14 +789,14 @@ To add or update users:
 # Add a new user to existing auth file
 htpasswd auth newuser
 
-# Update the secret
+# Update the secret in each namespace where it's used
 kubectl create secret generic basic-auth \
   --from-file=auth \
-  -n auth-proxy \
+  -n longhorn-system \
   --dry-run=client -o yaml | kubectl apply -f -
 
 # Restart nginx pods to pick up the new credentials
-kubectl rollout restart deployment -n auth-proxy
+kubectl rollout restart deployment nginx-auth-proxy -n longhorn-system
 ```
 
 To remove a user:
@@ -787,11 +808,11 @@ htpasswd -D auth username
 # Update the secret
 kubectl create secret generic basic-auth \
   --from-file=auth \
-  -n auth-proxy \
+  -n longhorn-system \
   --dry-run=client -o yaml | kubectl apply -f -
 
 # Restart nginx pods
-kubectl rollout restart deployment -n auth-proxy
+kubectl rollout restart deployment nginx-auth-proxy -n longhorn-system
 ```
 
 ## Step 5: Secure Applications with Basic Authentication
