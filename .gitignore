@@ -35,3 +35,4 @@ s3-backup-creds.yaml
 /tmp/*
 *.log
 /patches/outputpatch.yaml
+cloudflare-tunnel-secret.yaml
