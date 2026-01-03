@@ -146,3 +146,64 @@ spec:
           - device: /dev/disk/by-id/ata-CT500MX500SSD1_2007E28A9F2F
             partitions:
               - mountpoint: /var/mnt/storage
+
+---
+## Apply this patch using: omnictl apply -f machine-patches-new-nodes.yaml
+
+# This is a machine patch that adds a 500GB CT500MX500SSD1 disk to omni-talos-6 (192.168.0.236)
+# The patch is applied to the machine with ID: 7ed883bc-9997-4f5d-cef9-5b88b10044e0
+
+metadata:
+    namespace: default
+    type: ConfigPatches.omni.sidero.dev
+    id: 500-236-storage-disk
+    labels:
+        omni.sidero.dev/machine: 7ed883bc-9997-4f5d-cef9-5b88b10044e0
+    annotations:
+        description: add 500 GB sda disk (CT500MX500SSD1) to omni-talos-6
+        name: storage-disk-236
+spec:
+  data: |
+    machine:
+      kubelet:
+        extraMounts:
+          - destination: /var/mnt/storage
+            type: bind
+            source: /var/mnt/storage
+            options:
+              - bind
+              - rshared
+              - rw
+      disks:
+          - device: /dev/disk/by-id/ata-CT500MX500SSD1_2007E28A9F06
+            partitions:
+              - mountpoint: /var/mnt/storage
+---
+# This is a machine patch that adds a 500GB CT500MX500SSD1 disk to omni-talos-7 (192.168.0.237)
+# The patch is applied to the machine with ID: a909481e-af01-11e5-ba96-48957a01a0b4
+
+metadata:
+    namespace: default
+    type: ConfigPatches.omni.sidero.dev
+    id: 500-237-storage-disk
+    labels:
+        omni.sidero.dev/machine: a909481e-af01-11e5-ba96-48957a01a0b4
+    annotations:
+        description: add 500 GB sda disk (CT500MX500SSD1) to omni-talos-7
+        name: storage-disk-237
+spec:
+  data: |
+    machine:
+      kubelet:
+        extraMounts:
+          - destination: /var/mnt/storage
+            type: bind
+            source: /var/mnt/storage
+            options:
+              - bind
+              - rshared
+              - rw
+      disks:
+          - device: /dev/disk/by-id/ata-CT500MX500SSD1_2007E28A9F47
+            partitions:
+              - mountpoint: /var/mnt/storage
