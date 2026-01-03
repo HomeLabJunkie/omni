@@ -178,7 +178,7 @@ spec:
           - device: /dev/disk/by-id/ata-CT500MX500SSD1_2007E28A9F06
             partitions:
               - mountpoint: /var/mnt/storage
-                wipe: true
+
 ---
 # This is a machine patch that adds a 500GB CT500MX500SSD1 disk to omni-talos-7 (192.168.0.237)
 # The patch is applied to the machine with ID: a909481e-af01-11e5-ba96-48957a01a0b4
