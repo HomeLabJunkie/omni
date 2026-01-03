@@ -105,5 +105,3 @@ name: 7ed883bc-9997-4f5d-cef9-5b88b10044e0
 ---
 kind: Machine
 name: a909481e-af01-11e5-ba96-48957a01a0b4
----
-## Apply this patch using: omnictl apply -f machine-patches-new-nodes.yaml
