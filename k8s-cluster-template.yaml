@@ -82,6 +82,8 @@ kind: Workers
 machines:
   - 4c4c4544-0056-3510-8033-b2c04f335133
   - 4c4c4544-005a-5310-8050-b3c04f363733
+  - 7ed883bc-9997-4f5d-cef9-5b88b10044e0
+  - a909481e-af01-11e5-ba96-48957a01a0b4
 ---
 kind: Machine
 name: 4c4c4544-0033-3810-8038-c8c04f444d33
@@ -97,3 +99,11 @@ name: 4c4c4544-005a-5310-8050-b3c04f363733
 ---
 kind: Machine
 name: 4c4c4544-005a-5410-804e-b3c04f363733
+---
+kind: Machine
+name: 7ed883bc-9997-4f5d-cef9-5b88b10044e0
+---
+kind: Machine
+name: a909481e-af01-11e5-ba96-48957a01a0b4
+---
+## Apply this patch using: omnictl apply -f machine-patches-new-nodes.yaml
