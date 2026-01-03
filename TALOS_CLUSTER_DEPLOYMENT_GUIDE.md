@@ -219,63 +219,22 @@ helm install longhorn longhorn/longhorn \
   --set-string 'namespaceLabels.pod-security\.kubernetes\.io/warn=privileged'
 ```
 
-### 3.3 Patch DaemonSet for Storage Access
-
-**CRITICAL**: The Longhorn Helm chart doesn't automatically mount custom storage paths. Manual patching is required.
+### 3.3 Wait for Longhorn Pods to Start
 
 ```bash
-# Add storage volume to DaemonSet
-kubectl -n longhorn-system patch daemonset longhorn-manager --type=json -p='[
-  {
-    "op": "add",
-    "path": "/spec/template/spec/volumes/-",
-    "value": {
-      "name": "longhorn-default-disk",
-      "hostPath": {
-        "path": "/var/mnt/storage",
-        "type": "DirectoryOrCreate"
-      }
-    }
-  }
-]'
-
-# Add volume mount to container
-kubectl -n longhorn-system patch daemonset longhorn-manager --type=json -p='[
-  {
-    "op": "add",
-    "path": "/spec/template/spec/containers/0/volumeMounts/-",
-    "value": {
-      "name": "longhorn-default-disk",
-      "mountPath": "/var/mnt/storage",
-      "mountPropagation": "Bidirectional"
-    }
-  }
-]'
+# Watch pods come up
+kubectl -n longhorn-system get pods -w
 ```
 
-### 3.4 Wait for Pods to Restart
+Wait until all pods are running. You should see:
+- `longhorn-manager` pods (DaemonSet - one per node)
+- `longhorn-driver-deployer`
+- `longhorn-ui` pods
+- `instance-manager` pods
 
-```bash
-# Watch pods restart
-kubectl -n longhorn-system get pods -l app=longhorn-manager -w
-```
+**Note:** The `longhorn-manager` pods may initially show `1/2 READY`. This will resolve after disk configuration in Step 3.4.
 
-Wait until all longhorn-manager pods show `2/2 READY`.
-
-### 3.5 Verify DaemonSet Patches Applied
-
-```bash
-# Verify the volume mount was added to the DaemonSet
-kubectl -n longhorn-system get daemonset longhorn-manager -o yaml | grep -A5 "/var/mnt/storage"
-
-# You should see the volume definition and volumeMount
-```
-
-**Note:** The `/var/mnt/storage` path won't appear in `df -h` inside the container because Longhorn accesses storage directly on the Talos host via hostPath volumes. This is normal and expected.
-
-**The real verification is in the next step** - checking that Longhorn nodes show the disks as ready.
-
-### 3.6 Configure Longhorn Node Disks
+### 3.4 Configure Longhorn Node Disks
 
 Create and run the disk configuration script:
 
