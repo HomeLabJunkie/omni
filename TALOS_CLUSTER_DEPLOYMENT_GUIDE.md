@@ -262,19 +262,18 @@ kubectl -n longhorn-system get pods -l app=longhorn-manager -w
 
 Wait until all longhorn-manager pods show `2/2 READY`.
 
-### 3.5 Verify Storage Mount
+### 3.5 Verify DaemonSet Patches Applied
 
 ```bash
-# Verify mount is accessible inside pods
-kubectl -n longhorn-system exec \
-  $(kubectl -n longhorn-system get pods -l app=longhorn-manager -o jsonpath='{.items[0].metadata.name}') \
-  -c longhorn-manager -- df -h 2>/dev/null | grep storage
+# Verify the volume mount was added to the DaemonSet
+kubectl -n longhorn-system get daemonset longhorn-manager -o yaml | grep -A5 "/var/mnt/storage"
+
+# You should see the volume definition and volumeMount
 ```
 
-Expected output:
-```
-/dev/sda1       466G  9.0G  457G   2% /var/mnt/storage
-```
+**Note:** The `/var/mnt/storage` path won't appear in `df -h` inside the container because Longhorn accesses storage directly on the Talos host via hostPath volumes. This is normal and expected.
+
+**The real verification is in the next step** - checking that Longhorn nodes show the disks as ready.
 
 ### 3.6 Configure Longhorn Node Disks
 
