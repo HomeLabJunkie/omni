@@ -1,14 +1,14 @@
 # Talos Cluster Deployment Guide with Omni, Longhorn, and Cloudflare Tunnel
 
 ## Overview
-This guide provides the complete, tested steps to deploy a 5-node Talos Linux cluster using Omni with:
+This guide provides the complete, tested steps to deploy a Talos Linux cluster using Omni with:
 - Cilium CNI with KubeSpan
 - Longhorn distributed storage on dedicated 500GB disks
 - Cloudflare Tunnel for external application access
 - Domain: <yourdomain.com>
 
 ## Prerequisites
-- 5 physical nodes with Dell hardware
+- Physical nodes with Dell hardware
 - Each node has a 500GB CT500MX500SSD1 SSD for storage
 - Omni account and omnictl installed
 - kubectl installed
@@ -25,7 +25,7 @@ The cluster template is stored in your GitHub repository:
 **File location**: [`github.com/HomeLabJunkie/omni/k8s-cluster-template.yaml`](https://github.com/HomeLabJunkie/omni/blob/main/k8s-cluster-template.yaml)
 
 This template defines:
-- 5-node cluster (3 control plane, 2 workers)
+- Cluster nodes (3 control plane, remaining workers)
 - Workload scheduling enabled on control planes
 - Cilium CNI with KubeSpan enabled
 - Kubernetes v1.35.0 and Talos v1.12.0
@@ -62,7 +62,7 @@ The machine patches configure the 500GB CT500MX500SSD1 disks on each node.
 These patches:
 - Mount each node's 500GB SSD at `/var/mnt/storage`
 - Configure kubelet extra mounts for Longhorn
-- Apply to all 5 nodes (omni-talos-1 through omni-talos-5)
+- Apply to all nodes
 
 ### 2.2 Apply the Patches
 
@@ -76,77 +76,215 @@ Verify patches are applied:
 omnictl get configpatches | grep storage-disk
 ```
 
-You should see all 5 storage disk patches (500-231 through 500-235).
+### 2.3 Adding New Nodes (Optional)
+
+When adding new nodes to the cluster, you need to create machine patches for their storage disks.
+
+**Step 1: Gather Node Information**
+
+```bash
+# Get the machine UUID
+omnictl get machines | grep <new-node-name>
+
+# Get the disk information
+talosctl -n <node-ip> disks
+
+# Get the full disk-by-id path
+talosctl -n <node-ip> ls /dev/disk/by-id/ | grep CT500MX500SSD1
+```
+
+**Step 2: Create Machine Patch**
+
+Create a new patch file following the same format as existing patches:
+
+```yaml
+---
+metadata:
+    namespace: default
+    type: ConfigPatches.omni.sidero.dev
+    id: 500-<last-octet>-storage-disk
+    labels:
+        omni.sidero.dev/machine: <MACHINE_UUID>
+    annotations:
+        description: add 500 GB sda disk (CT500MX500SSD1) to omni-talos-<N>
+        name: storage-disk-<last-octet>
+spec:
+  data: |
+    machine:
+      kubelet:
+        extraMounts:
+          - destination: /var/mnt/storage
+            type: bind
+            source: /var/mnt/storage
+            options:
+              - bind
+              - rshared
+              - rw
+      disks:
+          - device: /dev/disk/by-id/ata-CT500MX500SSD1_<SERIAL>
+            partitions:
+              - mountpoint: /var/mnt/storage
+```
+
+**Step 3: Apply the Patch**
+
+```bash
+# Apply the new patch
+omnictl apply -f machine-patches-new-nodes.yaml
+
+# Wait for node to reboot and apply patch (2-3 minutes)
+
+# Verify the mount exists
+talosctl -n <node-ip> list /var/mnt/storage
+```
+
+**Step 4: Add Node to Longhorn**
+
+After the mount is configured, add the disk to Longhorn:
+
+```bash
+# Add the new node to Longhorn
+kubectl -n longhorn-system patch nodes.longhorn.io/<node-name> --type=json -p='[
+  {
+    "op": "replace",
+    "path": "/spec/disks",
+    "value": {
+      "default-disk": {
+        "allowScheduling": true,
+        "evictionRequested": false,
+        "path": "/var/mnt/storage",
+        "storageReserved": 0,
+        "tags": []
+      }
+    }
+  }
+]'
+
+# Verify the node is ready
+kubectl get nodes.longhorn.io -n longhorn-system
+```
+
+### 2.4 Troubleshooting: Disk Has Existing Filesystem
+
+If you encounter an error like:
+```
+[talos] volume status error formatting XFS: mkfs.xfs: /dev/sda1 appears to contain an existing filesystem (ntfs).
+```
+
+**Solution - Wipe the disk using talosctl**:
+
+```bash
+# 1. Remove the patch
+omnictl delete configpatch 500-<node>-storage-disk
+
+# 2. Reboot the node
+# Via Omni dashboard: Machines → Select node → Reboot
+
+# 3. Wipe the disk
+talosctl -n <node-ip> wipe disk sda
+
+# 4. Reapply the patch
+omnictl apply -f machine-patches.yaml
+
+# 5. Reboot the node again
+# The disk should now format successfully
+
+# 6. Verify the mount
+talosctl -n <node-ip> list /var/mnt/storage
+```
+
 
 ## Step 3: Install Longhorn
 
-### 3.1 Create Longhorn Values File
+### 3.1 Add Longhorn Helm Repository
 
-The Longhorn Helm values file is stored in your GitHub repository:
-
-**File location**: [`github.com/HomeLabJunkie/omni/longhorn-values.yaml`](https://github.com/HomeLabJunkie/omni/blob/main/longhorn-values.yaml)
-
-This configuration includes:
-- Default data path: `/var/mnt/storage`
-- PodSecurity labels for privileged namespace
-- Cilium webhook compatibility fix (`internalTrafficPolicy: Cluster`)
-- Omni service exposer annotations for UI access
-- Volume mounts for the storage path
+```bash
+helm repo add longhorn https://charts.longhorn.io
+helm repo update
+```
 
 ### 3.2 Install Longhorn via Helm
 
-The Helm install command is stored in your GitHub repository:
-
-**File location**: [`github.com/HomeLabJunkie/omni/homelab/helm-installs/longhorn-install.yaml`](https://github.com/HomeLabJunkie/omni/blob/main/homelab/helm-installs/longhorn-install.yaml)
-
 ```bash
-# Add Longhorn repository
-helm repo add longhorn https://charts.longhorn.io
-helm repo update
-
-# Install Longhorn using your values file
 helm install longhorn longhorn/longhorn \
   --namespace longhorn-system \
   --create-namespace \
-  -f https://raw.githubusercontent.com/HomeLabJunkie/omni/main/longhorn-values.yaml
+  --set defaultSettings.defaultDataPath=/var/mnt/storage \
+  --set defaultSettings.disableRevisionCounter=true \
+  --set defaultSettings.kubernetesClusterAutoscalerEnabled=false \
+  --set enablePSP=false \
+  --set defaultSettings.createDefaultDiskLabeledNodes=true \
+  --set-string 'namespaceLabels.pod-security\.kubernetes\.io/enforce=privileged' \
+  --set-string 'namespaceLabels.pod-security\.kubernetes\.io/audit=privileged' \
+  --set-string 'namespaceLabels.pod-security\.kubernetes\.io/warn=privileged'
 ```
 
-### 3.3 Fix Namespace PodSecurity Labels
+### 3.3 Patch DaemonSet for Storage Access
 
-The namespace needs privileged pod security labels:
+**CRITICAL**: The Longhorn Helm chart doesn't automatically mount custom storage paths. Manual patching is required.
 
 ```bash
-kubectl label namespace longhorn-system pod-security.kubernetes.io/enforce=privileged --overwrite
-kubectl label namespace longhorn-system pod-security.kubernetes.io/audit=privileged --overwrite
-kubectl label namespace longhorn-system pod-security.kubernetes.io/warn=privileged --overwrite
+# Add storage volume to DaemonSet
+kubectl -n longhorn-system patch daemonset longhorn-manager --type=json -p='[
+  {
+    "op": "add",
+    "path": "/spec/template/spec/volumes/-",
+    "value": {
+      "name": "longhorn-default-disk",
+      "hostPath": {
+        "path": "/var/mnt/storage",
+        "type": "DirectoryOrCreate"
+      }
+    }
+  }
+]'
+
+# Add volume mount to container
+kubectl -n longhorn-system patch daemonset longhorn-manager --type=json -p='[
+  {
+    "op": "add",
+    "path": "/spec/template/spec/containers/0/volumeMounts/-",
+    "value": {
+      "name": "longhorn-default-disk",
+      "mountPath": "/var/mnt/storage",
+      "mountPropagation": "Bidirectional"
+    }
+  }
+]'
 ```
 
-### 3.4 Restart Longhorn Manager Daemonset
+### 3.4 Wait for Pods to Restart
 
 ```bash
-kubectl rollout restart daemonset longhorn-manager -n longhorn-system
+# Watch pods restart
+kubectl -n longhorn-system get pods -l app=longhorn-manager -w
 ```
 
-### 3.5 Wait for Longhorn Pods to be Running
+Wait until all longhorn-manager pods show `2/2 READY`.
+
+### 3.5 Verify Storage Mount
 
 ```bash
-kubectl get pods -n longhorn-system -w
+# Verify mount is accessible inside pods
+kubectl -n longhorn-system exec \
+  $(kubectl -n longhorn-system get pods -l app=longhorn-manager -o jsonpath='{.items[0].metadata.name}') \
+  -c longhorn-manager -- df -h 2>/dev/null | grep storage
 ```
 
-Wait until all pods are running. You should see:
-- longhorn-manager pods (daemonset - 5 pods)
-- longhorn-driver-deployer
-- longhorn-ui pods
-- instance-manager pods
+Expected output:
+```
+/dev/sda1       466G  9.0G  457G   2% /var/mnt/storage
+```
 
-### 3.6 Add Storage Disks to Longhorn Nodes
+### 3.6 Configure Longhorn Node Disks
 
 Create and run the disk configuration script:
 
 ```bash
-cat > /tmp/add-longhorn-disks.sh <<'EOF'
+cat > /tmp/add-longhorn-disks.sh <<'SCRIPT'
 #!/bin/bash
-for node in omni-talos-1 omni-talos-2 omni-talos-3 omni-talos-4 omni-talos-5; do
+# Update this list with all your node names
+for node in omni-talos-1 omni-talos-2 omni-talos-3 omni-talos-4 omni-talos-5 omni-talos-6 omni-talos-7; do
   kubectl -n longhorn-system patch nodes.longhorn.io/$node --type=json -p='[
     {
       "op": "replace",
@@ -162,61 +300,72 @@ for node in omni-talos-1 omni-talos-2 omni-talos-3 omni-talos-4 omni-talos-5; do
       }
     }
   ]'
-  echo "Patched $node"
+  echo "✓ Patched $node"
 done
-EOF
+
+echo ""
+echo "All Longhorn nodes configured successfully!"
+SCRIPT
 
 chmod +x /tmp/add-longhorn-disks.sh
 /tmp/add-longhorn-disks.sh
 ```
 
-### 3.7 Verify Disks are Configured
+### 3.7 Verify Longhorn Installation
 
 ```bash
-# Check that disks are configured
-kubectl get nodes.longhorn.io -n longhorn-system -o yaml | grep -A10 "disks:"
-
-# Verify nodes are ready
+# Check all nodes are ready
 kubectl get nodes.longhorn.io -n longhorn-system
+
+# Expected output: All nodes showing READY: True, SCHEDULABLE: True
+
+# Check disk status on a node
+kubectl -n longhorn-system get nodes.longhorn.io omni-talos-1 -o yaml | grep -A20 "diskStatus:"
 ```
 
-All nodes should show `READY: True` and `SCHEDULABLE: True`.
-
-### 3.8 Configure S3 Backup Target
-
-**Note**: S3 credentials and configuration details are stored in your Trilium Notes application for reference.
-
-**Backup Target Configuration**:
-- S3 URL: `s3://longhorn@us-east-1/`
-- Secret Name: `longhorn-minio-credentials`
-
-Apply your S3 backup credentials from your LOCAL GitHub repository:
+### 3.8 Test Volume Creation
 
 ```bash
-# Apply the S3 credentials secret
-# File location: helm-installs/s3-backup-creds.yaml in your LOCAL GitHub repo 
-# (.gitignore does not upload this file to the public repo)
+# Create test PVC
+cat <<YAML | kubectl apply -f -
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: longhorn-test-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 1Gi
+YAML
+
+# Check if bound
+kubectl get pvc longhorn-test-pvc
+
+# Clean up
+kubectl delete pvc longhorn-test-pvc
+```
+
+### 3.9 Configure S3 Backup Target (Optional)
+
+**Note**: S3 credentials are stored in your local repository and not committed to public GitHub.
+
+```bash
+# Apply S3 credentials secret (from your local repo)
 kubectl apply -f s3-backup-creds.yaml
+
+# Set backup target
+kubectl -n longhorn-system patch settings.longhorn.io backup-target \
+  --type=merge -p '{"value":"s3://longhorn@us-east-1/"}'
+
+# Set backup credentials
+kubectl -n longhorn-system patch settings.longhorn.io backup-target-credential-secret \
+  --type=merge -p '{"value":"longhorn-minio-credentials"}'
 ```
 
-Configure the backup target in Longhorn:
-
-```bash
-# Set the backup target
-kubectl -n longhorn-system patch settings.longhorn.io backup-target --type=merge -p '{"value":"s3://longhorn@us-east-1/"}'
-
-# Set the backup target credential secret
-kubectl -n longhorn-system patch settings.longhorn.io backup-target-credential-secret --type=merge -p '{"value":"longhorn-minio-credentials"}'
-```
-
-Verify the backup target is configured:
-
-```bash
-kubectl -n longhorn-system get settings.longhorn.io backup-target -o yaml
-kubectl -n longhorn-system get settings.longhorn.io backup-target-credential-secret -o yaml
-```
-
-You should see the S3 backup target configured in the Longhorn UI under Settings → General → Backup Target.
 
 ## Step 4: Configure Cloudflare Tunnel
 
@@ -376,7 +525,7 @@ spec:
 kubectl create namespace cloudflare
 
 # Apply the minimal config ConfigMap
-kubectl apply -f - <<EOF
+kubectl apply -f - <<YAML
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -388,7 +537,7 @@ data:
     credentials-file: /etc/cloudflared/creds/credentials.json
     metrics: 0.0.0.0:2000
     no-autoupdate: true
-EOF
+YAML
 
 # Apply secret (replace with your credentials first)
 kubectl apply -f cloudflare-tunnel-secret.yaml
@@ -506,10 +655,13 @@ User → Cloudflare Tunnel → nginx (with auth) → Application
 
 ### 5.2 Install htpasswd Tool
 
-On your Omni development workstation (Ubuntu):
+On your Omni development workstation:
 
 ```bash
-# Install apache2-utils which includes htpasswd
+# On macOS with Homebrew:
+brew install httpd
+
+# On Ubuntu/Debian:
 sudo apt-get update
 sudo apt-get install -y apache2-utils
 
@@ -815,195 +967,28 @@ kubectl create secret generic basic-auth \
 kubectl rollout restart deployment nginx-auth-proxy -n longhorn-system
 ```
 
-## Step 5: Secure Applications with Basic Authentication
+## Summary
 
-### 5.1 Overview
+You now have a complete Talos Linux cluster with:
 
-This step adds nginx-based basic authentication to protect web applications exposed through Cloudflare Tunnel. This provides a simple username/password login before accessing services like Longhorn.
+- ✅ **Cluster deployed** via Omni with Cilium CNI and KubeSpan
+- ✅ **Longhorn storage** configured on dedicated 500GB disks
+- ✅ **Cloudflare Tunnel** for secure external access
+- ✅ **Basic authentication** protecting web applications
+- ✅ **Scalable architecture** - easy to add new nodes
 
-### 5.2 Install Apache Utils (for htpasswd)
+**Total Storage Capacity** (7 nodes example):
+- Raw: 7 × 490GB = ~3.43TB
+- Usable (with 3x replication): ~1.14TB
 
-On your development workstation:
+**Key Maintenance Tasks:**
+- Monitor Longhorn for disk health
+- Regular backups to S3 (if configured)
+- Keep Talos and Kubernetes updated via Omni
+- Rotate basic auth passwords periodically
 
-```bash
-# Install apache2-utils for htpasswd command
-# On macOS with Homebrew:
-brew install httpd
-
-# On Ubuntu/Debian:
-# sudo apt-get install apache2-utils
-```
-
-### 5.3 Create htpasswd Credentials
-
-```bash
-# Create htpasswd file with username
-htpasswd -c auth <username>
-
-# You'll be prompted to enter a password
-# This creates a file named 'auth' with encrypted credentials
-
-# View the generated hash
-cat auth
-```
-
-### 5.4 Create Basic Auth Secret
-
-Create a Kubernetes secret with the htpasswd credentials:
-
-```bash
-# Create the secret in the longhorn-system namespace
-kubectl create secret generic basic-auth \
-  --from-file=auth \
-  -n longhorn-system
-
-# Verify the secret
-kubectl get secret basic-auth -n longhorn-system
-```
-
-### 5.5 Deploy nginx Auth Proxy
-
-Create the nginx deployment that will proxy requests to Longhorn with basic auth:
-
-**File location**: `omni/homelab/infrastructure/nginx-auth-proxy-longhorn.yaml`
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx-auth-proxy
-  namespace: longhorn-system
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: nginx-auth-proxy
-  template:
-    metadata:
-      labels:
-        app: nginx-auth-proxy
-    spec:
-      containers:
-      - name: nginx
-        image: nginx:alpine
-        ports:
-        - containerPort: 80
-        volumeMounts:
-        - name: nginx-config
-          mountPath: /etc/nginx/nginx.conf
-          subPath: nginx.conf
-        - name: auth
-          mountPath: /etc/nginx/auth
-          readOnly: true
-      volumes:
-      - name: nginx-config
-        configMap:
-          name: nginx-auth-config
-      - name: auth
-        secret:
-          secretName: basic-auth
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: nginx-auth-proxy
-  namespace: longhorn-system
-spec:
-  selector:
-    app: nginx-auth-proxy
-  ports:
-  - port: 80
-    targetPort: 80
-  type: ClusterIP
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: nginx-auth-config
-  namespace: longhorn-system
-data:
-  nginx.conf: |
-    events {
-      worker_connections 1024;
-    }
-    
-    http {
-      server {
-        listen 80;
-        
-        location / {
-          auth_basic "Restricted Access";
-          auth_basic_user_file /etc/nginx/auth;
-          
-          proxy_pass http://longhorn-frontend:80;
-          proxy_set_header Host $host;
-          proxy_set_header X-Real-IP $remote_addr;
-          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          proxy_set_header X-Forwarded-Proto $scheme;
-        }
-      }
-    }
-```
-
-Apply the configuration:
-
-```bash
-kubectl apply -f nginx-auth-proxy-longhorn.yaml
-
-# Verify the deployment
-kubectl get pods -n longhorn-system -l app=nginx-auth-proxy
-kubectl get svc nginx-auth-proxy -n longhorn-system
-```
-
-### 5.6 Update Cloudflare Tunnel Route
-
-Update the Cloudflare Tunnel route to point to the nginx auth proxy instead of directly to Longhorn:
-
-1. Go to **Zero Trust** → **Networks** → **Tunnels**
-2. Click on `k8s-talos-tunnel`
-3. Go to **Public Hostname** tab
-4. Edit the `longhorn.<yourdomain.com>` route
-5. Update the **Service URL** to: `nginx-auth-proxy.longhorn-system:80`
-6. Click **Save hostname**
-
-### 5.7 Verify Authentication
-
-```bash
-# Test without credentials (should fail with 401)
-curl -I https://longhorn.<yourdomain.com>
-
-# Should return: HTTP/2 401 Unauthorized
-
-# Test with credentials (should succeed)
-curl -u <username>:<password> -I https://longhorn.<yourdomain.com>
-
-# Should return: HTTP/2 200 OK
-```
-
-Access in browser:
-- Navigate to `https://longhorn.<yourdomain.com>`
-- You'll be prompted for username and password
-- Enter the credentials you created in step 5.3
-- You should now see the Longhorn UI
-
-### 5.8 Reusable Pattern for Other Applications
-
-To add basic auth to other applications, follow this pattern:
-
-1. **Create htpasswd secret** in the application's namespace
-2. **Deploy nginx auth proxy** with the ConfigMap pointing to your application's service
-3. **Expose the nginx proxy** instead of the application directly
-4. **Update Cloudflare route** to point to `nginx-auth-proxy.<namespace>:80`
-
-Example for a different app:
-
-```yaml
-# In the ConfigMap nginx.conf, change the proxy_pass line:
-proxy_pass http://<your-app-service>:<port>;
-```
-
-**Security Notes**:
-- Basic auth credentials are transmitted securely over HTTPS via Cloudflare Tunnel
-- For production use, consider implementing OAuth2/OIDC with Authentik or similar
-- Rotate passwords periodically by regenerating the htpasswd file and updating the secret
+**Documentation Locations:**
+- Cluster templates: `github.com/HomeLabJunkie/omni/`
+- Machine patches: `github.com/HomeLabJunkie/omni/patches/`
+- Secrets (local only): `omni/homelab/secrets/` (gitignored)
 
