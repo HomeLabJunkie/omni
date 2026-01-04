@@ -219,6 +219,27 @@ helm install longhorn longhorn/longhorn \
   --set-string 'namespaceLabels.pod-security\.kubernetes\.io/warn=privileged'
 ```
 
+**IMPORTANT**: Verify namespace labels and restart DaemonSet if needed:
+
+```bash
+# Verify labels exist
+kubectl get namespace longhorn-system -o yaml | grep pod-security
+
+# If labels are present but pods aren't creating, restart the DaemonSet
+# This forces it to pick up the namespace security settings
+kubectl -n longhorn-system rollout restart daemonset longhorn-manager
+
+# If labels are missing, add them manually
+kubectl label namespace longhorn-system \
+  pod-security.kubernetes.io/enforce=privileged \
+  pod-security.kubernetes.io/audit=privileged \
+  pod-security.kubernetes.io/warn=privileged \
+  --overwrite
+
+# Then restart the DaemonSet
+kubectl -n longhorn-system rollout restart daemonset longhorn-manager
+```
+
 ### 3.3 Wait for Longhorn Pods to Start
 
 ```bash
@@ -311,21 +332,103 @@ kubectl delete pvc longhorn-test-pvc
 
 **Note**: S3 credentials are stored in your local repository and not committed to public GitHub.
 
+**Step 1: Apply S3 Credentials Secret**
+
 ```bash
 # Apply S3 credentials secret (from your local repo)
 kubectl apply -f s3-backup-creds.yaml
 
-# Set backup target
-kubectl -n longhorn-system patch settings.longhorn.io backup-target \
-  --type=merge -p '{"value":"s3://longhorn@us-east-1/"}'
+# Verify secret was created
+kubectl -n longhorn-system get secret longhorn-minio-credentials
+```
 
-# Set backup credentials
-kubectl -n longhorn-system patch settings.longhorn.io backup-target-credential-secret \
-  --type=merge -p '{"value":"longhorn-minio-credentials"}'
+**Step 2: Configure Backup Target via Longhorn UI**
+
+The backup target settings must be configured through the Longhorn UI:
+
+1. Access Longhorn UI at `https://longhorn.<yourdomain.com>` (or via your configured access method)
+2. Go to **Settings** → **General**
+3. Find **Backup Target** and enter: `s3://longhorn@us-east-1/`
+4. Find **Backup Target Credential Secret** and enter: `longhorn-minio-credentials`
+5. Click **Save**
+
+**Step 3: Verify Configuration**
+
+After saving, the UI will show the backup target status. Wait a few moments, then verify:
+
+- **Backup Target Status**: Should show "Available" (green)
+- This confirms Longhorn can successfully connect to your S3 storage
+
+You can also verify via kubectl:
+
+```bash
+# Check if backup settings were created
+kubectl -n longhorn-system get settings.longhorn.io | grep backup-target
+
+# Should show:
+# backup-target                              s3://longhorn@us-east-1/      true
+# backup-target-credential-secret            longhorn-minio-credentials     true
 ```
 
 
 ## Step 4: Configure Cloudflare Tunnel
+
+### 4.0 Reconnecting to Existing Tunnel (Optional)
+
+**If you already created a Cloudflare Tunnel in a previous deployment**, you can reuse it without recreating anything. The tunnel, routes, and DNS records persist in Cloudflare even when your cluster is destroyed.
+
+**What you can reuse:**
+- ✅ Existing tunnel (no need to delete or recreate)
+- ✅ Credentials file (`~/.cloudflared/<TUNNEL_ID>.json`)
+- ✅ Certificate (`~/.cloudflared/cert.pem`)
+- ✅ Public hostname routes (already configured in Cloudflare dashboard)
+- ✅ DNS records (already exist in Cloudflare)
+
+**Steps to reconnect:**
+
+```bash
+# 1. Get your existing tunnel ID
+cloudflared tunnel list
+
+# 2. Create namespace
+kubectl create namespace cloudflare
+
+# 3. Recreate the secret from your existing credentials file
+kubectl create secret generic cloudflared-secret \
+  --from-file=credentials.json=$HOME/.cloudflared/<YOUR_TUNNEL_ID>.json \
+  -n cloudflare
+
+# 4. Create the ConfigMap (replace <YOUR_TUNNEL_ID>)
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-config
+  namespace: cloudflare
+data:
+  config.yaml: |
+    tunnel: <YOUR_TUNNEL_ID>
+    credentials-file: /etc/cloudflared/creds/credentials.json
+    metrics: 0.0.0.0:2000
+    no-autoupdate: true
+EOF
+
+# 5. Apply your saved deployment file
+kubectl apply -f cloudflared-deployment.yaml
+
+# 6. Verify tunnel connected
+kubectl logs -n cloudflare -l app=cloudflared --tail=20
+```
+
+Expected log output:
+```
+INF Registered tunnel connection connIndex=0 connection=...
+INF Registered tunnel connection connIndex=1 connection=...
+```
+
+**If starting fresh**, continue with section 4.1 below.
+
+---
 
 ### 4.1 Install cloudflared on Development Workstation
 
@@ -602,6 +705,32 @@ https://longhorn.<yourdomain.com>
 ```
 
 ## Step 5: Secure Applications with Basic Authentication
+
+### 5.0 Redeploying Auth Proxy After Cluster Rebuild (Optional)
+
+**If you've rebuilt your cluster** and already have the `auth` file and nginx configuration saved, you can quickly redeploy:
+
+```bash
+# 1. Recreate the basic-auth secret from your saved auth file
+kubectl create secret generic basic-auth \
+  --from-file=auth \
+  -n longhorn-system
+
+# 2. Apply your saved nginx auth proxy deployment
+kubectl apply -f nginx-auth-proxy-longhorn.yaml
+
+# 3. Verify pods are running
+kubectl get pods -n longhorn-system -l app=nginx-auth-proxy
+
+# 4. Verify the service exists
+kubectl get svc nginx-auth-proxy -n longhorn-system
+```
+
+**Note:** Make sure your Cloudflare Tunnel route is still pointing to `nginx-auth-proxy.longhorn-system:80` (it should persist from the previous setup).
+
+**If setting up for the first time**, continue with section 5.1 below.
+
+---
 
 ### 5.1 Overview
 
